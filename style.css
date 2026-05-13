@@ -2,3 +2,157 @@
   top: 10px;
   left: 10px;
 }
+
+/* ============================================
+   Newsletter section — styled to match
+   codesnippets.pro footer newsletter
+   ============================================ */
+
+/* Outer section wrapper — match the teal background */
+.newsletter.section-fw-section-newsletter-342cb627-7695-45e8-b2de-d9654608c469-padding {
+  padding: 0 !important;
+}
+
+/* Remove the inner content card background and radius */
+.newsletter__content {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  padding: 28px 0 !important;
+}
+
+/* Make the content area a flex row — heading left, form right */
+.newsletter__content {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 24px !important;
+  max-width: 1140px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+/* Left column: heading */
+.newsletter__header {
+  margin: 0 !important;
+  text-align: left !important;
+  flex: 0 0 auto !important;
+}
+
+/* Heading style — match codesnippets.pro */
+.newsletter__heading {
+  color: #FFFFFF !important;
+  font-size: 27px !important;
+  font-weight: 600 !important;
+  font-family: "Outfit", sans-serif !important;
+  line-height: 1.4 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
+  margin: 0 !important;
+}
+
+/* Form area — right side */
+.newsletter__form {
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+/* Input-button container — inline layout */
+.newsletter-form__input-button-container {
+  gap: 0 !important;
+  align-items: stretch !important;
+}
+
+/* Input wrapper */
+.newsletter-form__input {
+  flex: 0 1 387px !important;
+}
+
+/* Input field div — white background, bordered */
+.input-field.input-field--base {
+  background-color: #FFFFFF !important;
+  border: 3px solid #FFFFFF !important;
+  border-radius: 5px !important;
+  padding: 0 !important;
+  height: 59px !important;
+  overflow: hidden !important;
+}
+
+/* Input field itself */
+.input-field__input {
+  background-color: #FFFFFF !important;
+  color: #2F3131 !important;
+  font-size: 18px !important;
+  font-family: "Outfit", sans-serif !important;
+  padding: 7px 20px !important;
+  height: 59px !important;
+  border: none !important;
+  border-radius: 5px 0 0 5px !important;
+}
+
+.input-field__input::placeholder {
+  color: #6E6E6E !important;
+}
+
+/* Button wrapper */
+.newsletter-form__button {
+  flex: 0 0 auto !important;
+}
+
+/* Subscribe button — match codesnippets.pro */
+.button.button--primary.button--large.button--expand {
+  background-color: rgb(213, 112, 76) !important;
+  color: #FFFFFF !important;
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  font-family: "Outfit", sans-serif !important;
+  text-transform: none !important;
+  border-radius: 0 5px 5px 0 !important;
+  padding: 5% 10% !important;
+  height: 59px !important;
+  width: auto !important;
+  min-width: 120px !important;
+  border: none !important;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 768px) {
+  .newsletter__content {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 28px 20px !important;
+  }
+
+  .newsletter__header {
+    text-align: center !important;
+  }
+
+  .newsletter__heading {
+    text-align: center !important;
+    font-size: 22px !important;
+  }
+
+  .newsletter__form {
+    width: 100% !important;
+  }
+
+  .newsletter-form__input {
+    flex: 1 1 100% !important;
+  }
+
+  .newsletter-form__input-button-container {
+    flex-direction: column !important;
+  }
+
+  .input-field.input-field--base,
+  .input-field__input {
+    border-radius: 5px 5px 0 0 !important;
+  }
+
+  .button.button--primary.button--large.button--expand {
+    border-radius: 0 0 5px 5px !important;
+    width: 100% !important;
+  }
+}
