@@ -71,7 +71,7 @@
 }
 
 /* Input field div — white background, bordered */
-.input-field.input-field--base {
+.newsletter-form  .input-field.input-field--base {
   background-color: #FFFFFF !important;
   border: 3px solid #FFFFFF !important;
   border-radius: 5px !important;
@@ -81,7 +81,7 @@
 }
 
 /* Input field itself */
-.input-field__input {
+.newsletter-form .input-field__input {
   background-color: #FFFFFF !important;
   color: #2F3131 !important;
   font-size: 18px !important;
@@ -92,7 +92,7 @@
   border-radius: 5px 0 0 5px !important;
 }
 
-.input-field__input::placeholder {
+.newsletter-form .input-field__input::placeholder {
   color: #6E6E6E !important;
 }
 
@@ -102,7 +102,7 @@
 }
 
 /* Subscribe button — match codesnippets.pro */
-.button.button--primary.button--large.button--expand {
+.newsletter-form .button.button--primary.button--large.button--expand {
   background-color: rgb(213, 112, 76) !important;
   color: #FFFFFF !important;
   font-size: 22px !important;
@@ -146,12 +146,12 @@
     flex-direction: column !important;
   }
 
-  .input-field.input-field--base,
-  .input-field__input {
+  .newsletter-form .input-field.input-field--base,
+  .newsletter-form .input-field__input {
     border-radius: 5px 5px 0 0 !important;
   }
 
-  .button.button--primary.button--large.button--expand {
+  .newsletter-form  .button.button--primary.button--large.button--expand {
     border-radius: 0 0 5px 5px !important;
     width: 100% !important;
   }
