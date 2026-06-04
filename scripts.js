@@ -205,32 +205,84 @@
     return colorHtml + sizeHtml;
   }
 
+
+  function isHomePage() {
+    return window.location.pathname === '/' || window.location.pathname === '';
+  }
+
+  function displayCollectionName(slug, fallback) {
+    return DESIGN_COLLECTIONS[slug] || fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
+  }
+
+  function productCountLabel(count) {
+    return count === 1 ? '1 product' : count + ' products';
+  }
+
+  function designCardText(name) {
+    var words = String(name || '').split(/\s+/).filter(Boolean);
+    if (words.length <= 2) return words.join('<br>');
+    return words.slice(0, 4).join('<br>');
+  }
+
+  function renderHome(root, state) {
+    var cards = state.collections.filter(function (collection) {
+      return DESIGN_COLLECTIONS[collection.slug];
+    }).map(function (collection) {
+      var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
+      var name = displayCollectionName(collection.slug, collection.name || collection.title);
+      return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
+        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + designCardText(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
+        + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span><span class="cs-btn cs-btn--outline cs-btn--small">View</span></div>'
+        + '</a>';
+    }).join('');
+
+    root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
+      + '<div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h1 class="cs-h2">Open a design to configure it</h1><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size — no hopping between pages.</p></div>'
+      + '<div class="cs-grid cs-grid--4">' + cards + '</div>'
+      + '</section>';
+  }
+
+  function renderProductPreview(product, variant) {
+    var image = firstImage(product, variant);
+    return '<div class="pdfx-cfgprev">'
+      + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
+      + '<span class="pdfx-cfgprev__tag">' + escapeHtml(productType(product)) + '</span>'
+      + '</div>';
+  }
+
+  function renderMediumRail(products, activeProduct) {
+    return '<div class="pdfx-medrail">' + products.map(function (item) {
+      var variant = (item.variants || [])[0] || null;
+      var active = item.slug === activeProduct.slug;
+      return '<div class="pdfx-medslot' + (active ? ' pdfx-medslot--on' : '') + '"><button type="button" class="pdfx-medcard' + (active ? ' pdfx-medcard--on' : '') + '" data-product="' + escapeHtml(item.slug) + '">'
+        + '<div class="pdfx-medcard__stage">' + (active ? '<span class="pdfx-medcard__sel">Selected</span>' : '') + (firstImage(item, variant) ? '<img src="' + escapeHtml(firstImage(item, variant)) + '" alt="' + escapeHtml(item.name) + '">' : '') + '</div>'
+        + '<span class="pdfx-medcard__name">' + escapeHtml(productType(item)) + '</span><span class="pdfx-medcard__meta"><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b><span>· ' + escapeHtml(uniqueColors(item).length ? uniqueColors(item).length + ' colors' : 'one size') + '</span></span>'
+        + '</button></div>';
+    }).join('') + '</div>';
+  }
+
   function render(root, state) {
+    if (state.page === 'home') {
+      renderHome(root, state);
+      return;
+    }
+
     var product = state.products.find(function (item) { return item.slug === state.selection.productSlug; }) || state.products[0];
     if (!product) {
       root.innerHTML = '<section class="cs-storefront"><p>No products found for this collection.</p></section>';
       return;
     }
     var variant = selectedVariant(product, state.selection);
-    var image = firstImage(product, variant);
-    root.innerHTML = '<section class="cs-storefront" aria-live="polite">'
-      + '<div class="cs-storefront__eyebrow">Code Snippets Store</div>'
-      + '<div class="cs-storefront__grid">'
-      + '<div class="cs-storefront__media">' + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '">' : '') + '</div>'
-      + '<div class="cs-storefront__panel">'
-      + '<p class="cs-storefront__collection">' + escapeHtml(state.collection.name) + '</p>'
-      + '<h1>' + escapeHtml(product.name) + '</h1>'
-      + '<p class="cs-storefront__type">' + escapeHtml(productType(product)) + '</p>'
-      + '<p class="cs-storefront__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</p>'
-      + '<div class="cs-storefront__products" role="listbox" aria-label="Products">' + state.products.map(function (item) {
-        var active = item.slug === product.slug ? ' is-active' : '';
-        return '<button type="button" class="cs-storefront__product' + active + '" data-product="' + escapeHtml(item.slug) + '">' + escapeHtml(productType(item)) + '</button>';
-      }).join('') + '</div>'
-      + renderProductOptions(product, state.selection)
-      + '<label class="cs-storefront__qty">Qty <input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label>'
-      + '<button type="button" class="cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Add to cart</button>'
-      + '<p class="cs-storefront__note">Uses Fourthwall cart and native checkout.</p>'
-      + '</div></div></section>';
+    var collectionName = displayCollectionName(state.collection.slug, state.collection.name || state.collection.title);
+    root.innerHTML = '<section class="cs-storefront cs-storefront--collection">'
+      + '<div class="cs-wrapper pdfx-pdp">'
+      + '<div class="pdfx-pdp__top">'
+      + '<div class="pdfx-pdpart"><span class="pdfx-pdpart__c tl">CODE SNIPPETS</span><span class="pdfx-pdpart__c tr">LIMITED</span><span class="pdfx-pdpart__c bl">' + escapeHtml(state.collection.slug || '') + '</span><span class="pdfx-pdpart__c br">est. 2026</span><div class="pdfx-pdpart__type"><span>' + designCardText(collectionName) + '</span></div></div>'
+      + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">One design, every available product. Pick the medium, choose the variant, then hand off to the native Fourthwall checkout.</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3–5 days</b></div></div></div>'
+      + '</div></div>'
+      + '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">2</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow"><label class="cs-qty"><input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label><div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Add to Cart — ' + escapeHtml(productType(product)) + '</button></div></div><p class="cs-ship">In stock · ships in 3–5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button">Copy link</button></div><div class="pdfx-acc"><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Print & materials</span><span class="pdfx-acc__plus">+</span></button><div class="pdfx-acc__body">Printed to order on premium blanks. Product options update from live Fourthwall variant data.</div></div><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Shipping & returns</span><span class="pdfx-acc__plus">+</span></button></div></div></div></div></div></section>'
+      + '</section>';
   }
 
   function bind(root, state) {
@@ -257,7 +309,7 @@
       }
     });
     root.addEventListener('change', function (event) {
-      if (event.target.matches('.cs-storefront__qty input')) {
+      if (event.target.matches('.cs-storefront__qty input, .cs-qty input')) {
         state.selection.quantity = Math.max(1, parseInt(event.target.value, 10) || 1);
         syncUrl(state.selection);
       }
@@ -401,18 +453,32 @@
     }
     mount.innerHTML = '<section class="cs-storefront cs-storefront--loading">Loading products…</section>';
     var slug = currentCollectionSlug();
-    Promise.all([
+    var request = isHomePage() ? Promise.all([
+      fetchJson('/collections', { size: 100 }),
+      fetchJson('/collections/all/products', { size: 100, currency: CURRENCY })
+    ]).then(function (responses) {
+      var collections = responses[0].results || [];
+      var counts = {};
+      publicProducts(responses[1].results).forEach(function (product) {
+        var key = designKey(product);
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      return { page: 'home', collections: collections, counts: counts };
+    }) : Promise.all([
       fetchJson('/collections', { size: 100 }),
       loadCollectionProducts(slug)
     ]).then(function (responses) {
       var collections = responses[0].results || [];
       var collection = collections.find(function (item) { return item.slug === slug; }) || { name: DESIGN_COLLECTIONS[slug] || 'Code Snippets', slug: slug };
       var products = responses[1].products;
-      var state = { collection: collection, products: products, selection: selectionFromUrl(products) };
+      return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products) };
+    });
+
+    request.then(function (state) {
       render(mount, state);
-      bind(mount, state);
+      if (state.page !== 'home') bind(mount, state);
       document.documentElement.classList.add('cs-storefront-ready');
-      window.dispatchEvent(new CustomEvent('cs:storefront-ready', { detail: { collection: collection, products: products } }));
+      window.dispatchEvent(new CustomEvent('cs:storefront-ready', { detail: state }));
     }).catch(function (error) {
       console.error('[swag-shop] storefront failed', error);
       mount.innerHTML = '<section class="cs-storefront cs-storefront--error">Could not load products. Please refresh or use the native product list below.</section>';
