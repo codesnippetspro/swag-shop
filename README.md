@@ -1,1 +1,1 @@
-# Visit: https://swag.codesnippets.pro/
+# Visit: https://codesnippets.store
