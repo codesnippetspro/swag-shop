@@ -363,16 +363,40 @@
       });
   }
 
-  function init() {
+  function isCollectionPage() {
+    return /\/collections\/[^/?#]+/.test(window.location.pathname);
+  }
+
+  function ensureMountRoot() {
     var root = qs('root');
+    if (root) return root;
+    if (!isCollectionPage()) return null;
+
+    var main = qs('.page__main') || qs('main') || document.body;
+    root = document.createElement('root');
+    root.setAttribute('data-cs-auto-root', 'true');
+    main.insertBefore(root, main.firstChild);
+    return root;
+  }
+
+  function renderTokenMissing(root) {
+    root.innerHTML = '<section class="cs-storefront cs-storefront--error">'
+      + '<strong>Storefront token missing.</strong>'
+      + '<span>Add window.CS_SWAG_CONFIG.storefrontToken or root[data-storefront-token] in Fourthwall custom code.</span>'
+      + '</section>';
+  }
+
+  function init() {
+    var root = ensureMountRoot();
     if (!root || root.dataset.csStorefrontMounted) return;
+    root.dataset.csStorefrontMounted = 'true';
+    var main = root.closest('.page__main') || qs('.page__main');
+    if (main) main.classList.add('cs-storefront-mounted');
     if (!STOREFRONT_TOKEN) {
       console.warn('[swag-shop] Missing Storefront API token. Add window.CS_SWAG_CONFIG.storefrontToken or root[data-storefront-token].');
+      renderTokenMissing(root);
       return;
     }
-    root.dataset.csStorefrontMounted = 'true';
-    var main = root.closest('.page__main');
-    if (main) main.classList.add('cs-storefront-mounted');
     root.innerHTML = '<section class="cs-storefront cs-storefront--loading">Loading products…</section>';
     var slug = currentCollectionSlug();
     Promise.all([
