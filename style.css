@@ -323,3 +323,21 @@
   .pdfx-stephead .hint { text-align: left; margin-top: 10px; }
   .cs-buyrow { flex-wrap: wrap; }
 }
+
+.cs-storefront--loading { max-width: 1140px; margin: 0 auto; padding: 56px 20px; }
+.cs-skeleton,
+.cs-skeleton-grid span { position: relative; overflow: hidden; background: #f2f0ee; border-radius: 18px; }
+.cs-skeleton::after,
+.cs-skeleton-grid span::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,0.72), transparent); animation: cs-skeleton-shimmer 1.4s infinite; }
+.cs-skeleton--hero { min-height: 220px; padding: 34px; display: grid; gap: 18px; align-content: center; }
+.cs-skeleton--hero span,
+.cs-skeleton--hero b,
+.cs-skeleton--hero p { display: block; background: #e3dfdc; border-radius: 999px; margin: 0; }
+.cs-skeleton--hero span { width: 120px; height: 16px; }
+.cs-skeleton--hero b { width: min(420px, 80%); height: 42px; }
+.cs-skeleton--hero p { width: min(560px, 92%); height: 18px; }
+.cs-skeleton--hero p:last-child { width: min(460px, 74%); }
+.cs-skeleton-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin-top: 28px; }
+.cs-skeleton-grid span { aspect-ratio: 1 / 1; min-height: 190px; }
+@keyframes cs-skeleton-shimmer { 100% { transform: translateX(100%); } }
+@media (max-width: 760px) { .cs-skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

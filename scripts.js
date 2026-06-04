@@ -145,6 +145,20 @@
     return image ? (image.transformedUrl || image.url) : '';
   }
 
+  function stableParam(value) {
+    return String(value == null ? '' : value).toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  function variantColor(variant) {
+    var color = variant && variant.attributes && variant.attributes.color;
+    return color && color.name || '';
+  }
+
+  function variantSize(variant) {
+    var size = variant && variant.attributes && variant.attributes.size;
+    return size && size.name || '';
+  }
+
   function uniqueColors(product) {
     var seen = {};
     return (product.variants || []).reduce(function (colors, variant) {
@@ -171,22 +185,32 @@
 
   function defaultSelection(product) {
     var variant = (product.variants || [])[0] || null;
-    var attrs = variant && variant.attributes || {};
+    return selectionFromVariant(product, variant, 1);
+  }
+
+  function selectionFromVariant(product, variant, quantity) {
     return {
-      productSlug: product.slug,
-      color: attrs.color && attrs.color.name || '',
-      size: attrs.size && attrs.size.name || '',
-      quantity: 1
+      productSlug: product && product.slug || '',
+      productId: product && product.id || '',
+      variantId: variant && variant.id || '',
+      color: variantColor(variant),
+      size: variantSize(variant),
+      quantity: Math.max(1, parseInt(quantity, 10) || 1)
     };
   }
 
   function selectedVariant(product, selection) {
     var variants = product.variants || [];
+    if (!variants.length) return null;
+    if (selection.variantId) {
+      var selectedId = stableParam(selection.variantId);
+      var byId = variants.find(function (variant) { return stableParam(variant.id) === selectedId; });
+      if (byId) return byId;
+    }
     if (variants.length === 1) return variants[0];
     return variants.find(function (variant) {
-      var attrs = variant.attributes || {};
-      var color = attrs.color && attrs.color.name || '';
-      var size = attrs.size && attrs.size.name || '';
+      var color = variantColor(variant);
+      var size = variantSize(variant);
       return (!selection.color || color === selection.color) && (!selection.size || size === selection.size);
     }) || variants[0];
   }
@@ -194,11 +218,11 @@
   function renderProductOptions(product, selection) {
     var colors = uniqueColors(product);
     var sizes = uniqueSizes(product);
-    var colorHtml = colors.length ? '<div class="cs-storefront__option-group"><span>Colour</span><div class="cs-storefront__swatches">' + colors.map(function (color) {
+    var colorHtml = colors.length > 1 ? '<div class="cs-storefront__option-group"><span>Colour</span><div class="cs-storefront__swatches">' + colors.map(function (color) {
       var active = color.name === selection.color ? ' is-active' : '';
       return '<button type="button" class="cs-storefront__swatch' + active + '" data-color="' + escapeHtml(color.name) + '" title="' + escapeHtml(color.name) + '"><span style="background:' + escapeHtml(color.swatch) + '"></span>' + escapeHtml(color.name) + '</button>';
     }).join('') + '</div></div>' : '';
-    var sizeHtml = sizes.length ? '<div class="cs-storefront__option-group"><span>Size</span><div class="cs-storefront__sizes">' + sizes.map(function (size) {
+    var sizeHtml = sizes.length > 1 ? '<div class="cs-storefront__option-group"><span>Size</span><div class="cs-storefront__sizes">' + sizes.map(function (size) {
       var active = size === selection.size ? ' is-active' : '';
       return '<button type="button" class="cs-storefront__size' + active + '" data-size="' + escapeHtml(size) + '">' + escapeHtml(size) + '</button>';
     }).join('') + '</div></div>' : '';
@@ -250,6 +274,54 @@
       + '</div>';
   }
 
+  function sanitizeProductHtml(html) {
+    var template = document.createElement('template');
+    template.innerHTML = String(html || '');
+    template.content.querySelectorAll('script, style, iframe, object, embed').forEach(function (node) {
+      node.remove();
+    });
+    template.content.querySelectorAll('*').forEach(function (node) {
+      Array.prototype.slice.call(node.attributes).forEach(function (attr) {
+        if (/^on/i.test(attr.name) || /javascript:/i.test(attr.value)) {
+          node.removeAttribute(attr.name);
+        }
+      });
+    });
+    return template.innerHTML;
+  }
+
+  function accordionTitle(type, fallback) {
+    var titles = {
+      MORE_DETAILS: 'Product details',
+      SIZE_AND_FIT: 'Size & fit',
+      GUARANTEE_AND_RETURNS: 'Guarantee & returns'
+    };
+    return titles[type] || fallback || 'Product information';
+  }
+
+  function renderProductAccordion(product) {
+    var rows = [];
+    (product.additionalInformation || []).forEach(function (item) {
+      if (!item || !item.bodyHtml) return;
+      rows.push({ title: item.title || accordionTitle(item.type), body: sanitizeProductHtml(item.bodyHtml) });
+    });
+    if (product.sizeGuide && (product.sizeGuide.description || product.sizeGuide.previewUrl || product.sizeGuide.fileUrl || product.sizeGuide.fitGuideDescription)) {
+      var sizeBody = '';
+      if (product.sizeGuide.description) sizeBody += '<p>' + escapeHtml(product.sizeGuide.description) + '</p>';
+      if (product.sizeGuide.fitGuideDescription) sizeBody += '<p>' + escapeHtml(product.sizeGuide.fitGuideDescription) + '</p>';
+      if (product.sizeGuide.previewUrl) sizeBody += '<p><a href="' + escapeHtml(product.sizeGuide.previewUrl) + '" target="_blank" rel="noopener">View size guide preview</a></p>';
+      if (product.sizeGuide.fileUrl) sizeBody += '<p><a href="' + escapeHtml(product.sizeGuide.fileUrl) + '" target="_blank" rel="noopener">Download size guide</a></p>';
+      rows.push({ title: 'Size guide', body: sizeBody });
+    }
+    if (!rows.length && product.description) {
+      rows.push({ title: 'Product details', body: sanitizeProductHtml(product.description) });
+    }
+    if (!rows.length) return '';
+    return '<div class="pdfx-acc">' + rows.map(function (row, index) {
+      return '<div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">' + escapeHtml(row.title) + '</span><span class="pdfx-acc__plus">' + (index === 0 ? '−' : '+') + '</span></button><div class="pdfx-acc__body"' + (index === 0 ? '' : ' hidden') + '>' + row.body + '</div></div>';
+    }).join('') + '</div>';
+  }
+
   function renderMediumRail(products, activeProduct) {
     return '<div class="pdfx-medrail">' + products.map(function (item) {
       var variant = (item.variants || [])[0] || null;
@@ -267,7 +339,7 @@
       return;
     }
 
-    var product = state.products.find(function (item) { return item.slug === state.selection.productSlug; }) || state.products[0];
+    var product = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
     if (!product) {
       root.innerHTML = '<section class="cs-storefront"><p>No products found for this collection.</p></section>';
       return;
@@ -281,8 +353,26 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">One design, every available product. Pick the medium, choose the variant, then hand off to the native Fourthwall checkout.</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3–5 days</b></div></div></div>'
       + '</div></div>'
       + '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>'
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">2</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow"><label class="cs-qty"><input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label><div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Add to Cart — ' + escapeHtml(productType(product)) + '</button></div></div><p class="cs-ship">In stock · ships in 3–5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button" data-copy-link="' + escapeHtml(window.location.href) + '">Copy link</button></div><div class="pdfx-acc"><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Print & materials</span><span class="pdfx-acc__plus">+</span></button><div class="pdfx-acc__body">Printed to order on premium blanks. Product options update from live Fourthwall variant data.</div></div><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Shipping & returns</span><span class="pdfx-acc__plus">+</span></button></div></div></div></div></div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">2</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow"><label class="cs-qty"><input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label><div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3–5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button" data-copy-link="' + escapeHtml(window.location.href) + '">Copy link</button></div>' + renderProductAccordion(product) + '</div></div></div></section>'
       + '</section>';
+  }
+
+  function updateSelectionFromVariant(state, product, variant) {
+    state.selection = selectionFromVariant(product, variant, state.selection.quantity);
+  }
+
+  function variantForOption(product, selection, optionName, optionValue) {
+    var colors = uniqueColors(product);
+    var sizes = uniqueSizes(product);
+    var desiredColor = optionName === 'color' ? optionValue : selection.color;
+    var desiredSize = optionName === 'size' ? optionValue : selection.size;
+    if (colors.length <= 1) desiredColor = '';
+    if (sizes.length <= 1) desiredSize = '';
+    return (product.variants || []).find(function (variant) {
+      var color = variantColor(variant);
+      var size = variantSize(variant);
+      return (!desiredColor || color === desiredColor) && (!desiredSize || size === desiredSize);
+    }) || (product.variants || [])[0] || null;
   }
 
   function bind(root, state) {
@@ -292,29 +382,40 @@
       var sizeButton = event.target.closest('[data-size]');
       var addButton = event.target.closest('.cs-storefront__add');
       var copyButton = event.target.closest('[data-copy-link]');
+      var accordionButton = event.target.closest('.pdfx-acc__head');
       if (productButton) {
         var product = state.products.find(function (item) { return item.slug === productButton.dataset.product; });
         state.selection = defaultSelection(product);
-        syncUrl(state.selection);
+        syncUrl(state.selection, product, selectedVariant(product, state.selection));
         render(root, state);
       } else if (colorButton) {
-        state.selection.color = colorButton.dataset.color;
-        syncUrl(state.selection);
+        var colorProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
+        updateSelectionFromVariant(state, colorProduct, variantForOption(colorProduct, state.selection, 'color', colorButton.dataset.color));
+        syncUrl(state.selection, colorProduct, selectedVariant(colorProduct, state.selection));
         render(root, state);
       } else if (sizeButton) {
-        state.selection.size = sizeButton.dataset.size;
-        syncUrl(state.selection);
+        var sizeProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
+        updateSelectionFromVariant(state, sizeProduct, variantForOption(sizeProduct, state.selection, 'size', sizeButton.dataset.size));
+        syncUrl(state.selection, sizeProduct, selectedVariant(sizeProduct, state.selection));
         render(root, state);
       } else if (addButton) {
         addSelectedToCart(addButton, state);
       } else if (copyButton) {
         copyShareLink(copyButton);
+      } else if (accordionButton) {
+        var body = accordionButton.parentElement && accordionButton.parentElement.querySelector('.pdfx-acc__body');
+        var marker = accordionButton.querySelector('.pdfx-acc__plus');
+        if (body) {
+          body.hidden = !body.hidden;
+          if (marker) marker.textContent = body.hidden ? '+' : '−';
+        }
       }
     });
     root.addEventListener('change', function (event) {
       if (event.target.matches('.cs-storefront__qty input, .cs-qty input')) {
         state.selection.quantity = Math.max(1, parseInt(event.target.value, 10) || 1);
-        syncUrl(state.selection);
+        var qtyProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
+        syncUrl(state.selection, qtyProduct, selectedVariant(qtyProduct, state.selection));
       }
     });
   }
@@ -366,22 +467,33 @@
     fallbackCopy();
   }
 
-  function syncUrl(selection) {
-    var params = new URLSearchParams(window.location.search);
-    params.set('prod', selection.productSlug);
-    if (selection.color) params.set('color', selection.color); else params.delete('color');
-    if (selection.size) params.set('size', selection.size); else params.delete('size');
-    params.set('qty', selection.quantity || 1);
+  function syncUrl(selection, product, variant) {
+    var params = new URLSearchParams();
+    if (product && (product.id || product.slug)) params.set('p', stableParam(product.id || product.slug));
+    if (variant && variant.id) params.set('v', stableParam(variant.id));
+    params.set('q', selection.quantity || 1);
     window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
   }
 
   function selectionFromUrl(products) {
     var params = new URLSearchParams(window.location.search);
-    var product = products.find(function (item) { return item.slug === params.get('prod'); }) || products[0];
+    var productParam = params.get('p') || params.get('prod') || '';
+    var variantParam = params.get('v') || params.get('variant') || '';
+    var product = products.find(function (item) {
+      return stableParam(item.id) === stableParam(productParam) || stableParam(item.slug) === stableParam(productParam) || item.slug === productParam;
+    }) || products[0];
     var selection = defaultSelection(product);
-    if (params.get('color')) selection.color = params.get('color');
-    if (params.get('size')) selection.size = params.get('size');
-    if (params.get('qty')) selection.quantity = Math.max(1, parseInt(params.get('qty'), 10) || 1);
+    var variant = null;
+    if (variantParam) {
+      variant = (product.variants || []).find(function (item) { return stableParam(item.id) === stableParam(variantParam); });
+    }
+    if (!variant && (params.get('color') || params.get('size'))) {
+      selection.color = params.get('color') || selection.color;
+      selection.size = params.get('size') || selection.size;
+      variant = selectedVariant(product, selection);
+    }
+    if (variant) selection = selectionFromVariant(product, variant, selection.quantity);
+    selection.quantity = Math.max(1, parseInt(params.get('q') || params.get('qty'), 10) || 1);
     return selection;
   }
 
@@ -410,7 +522,7 @@
   }
 
   function addSelectedToCart(button, state) {
-    var product = state.products.find(function (item) { return item.slug === state.selection.productSlug; }) || state.products[0];
+    var product = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
     var variant = selectedVariant(product, state.selection);
     if (!variant || !variant.id) return;
     var quantity = Math.max(1, state.selection.quantity || 1);
@@ -428,7 +540,7 @@
     }).catch(function (error) {
       console.error('[swag-shop] add to cart failed', error);
       button.disabled = false;
-      button.textContent = 'Add to cart';
+      button.textContent = 'Checkout now';
       window.location.href = '/products/' + encodeURIComponent(product.slug);
     });
   }
@@ -491,6 +603,13 @@
       + '</section>';
   }
 
+  function renderSkeleton(root) {
+    root.innerHTML = '<section class="cs-storefront cs-storefront--loading" aria-busy="true">'
+      + '<div class="cs-skeleton cs-skeleton--hero"><span></span><b></b><p></p><p></p></div>'
+      + '<div class="cs-skeleton-grid"><span></span><span></span><span></span><span></span></div>'
+      + '</section>';
+  }
+
   function init() {
     var mount = ensureMountRoot();
     if (!mount || mount.dataset.csStorefrontMounted) return;
@@ -501,7 +620,7 @@
       renderTokenMissing(mount);
       return;
     }
-    mount.innerHTML = '<section class="cs-storefront cs-storefront--loading">Loading products…</section>';
+    renderSkeleton(mount);
     var slug = currentCollectionSlug();
     var request = isHomePage() ? Promise.all([
       fetchJson('/collections', { size: 100 }),
@@ -525,6 +644,10 @@
     });
 
     request.then(function (state) {
+      if (state.page !== 'home') {
+        var initialProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
+        syncUrl(state.selection, initialProduct, selectedVariant(initialProduct, state.selection));
+      }
       render(mount, state);
       if (state.page !== 'home') bind(mount, state);
       document.documentElement.classList.add('cs-storefront-ready');
