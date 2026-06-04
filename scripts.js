@@ -38,9 +38,7 @@
   }
 
   var STOREFRONT_TOKEN = decodeStorefrontToken(
-    (window.CS_SWAG_CONFIG && window.CS_SWAG_CONFIG.storefrontToken)
-      || (qs('root') && qs('root').getAttribute('data-storefront-token'))
-      || ''
+    (window.CS_SWAG_CONFIG && window.CS_SWAG_CONFIG.storefrontToken) || ''
   );
   var API_BASE = 'https://storefront-api.fourthwall.com/v1';
   var CURRENCY = 'USD';
@@ -368,15 +366,20 @@
   }
 
   function ensureMountRoot() {
-    var root = qs('root');
-    if (root) return root;
-    if (!isCollectionPage()) return null;
+    var sourceRoot = qs('root');
+    var pageMain = (sourceRoot && sourceRoot.closest('.page__main')) || qs('.page__main');
+    if (!pageMain && !isCollectionPage()) return null;
+    pageMain = pageMain || qs('main') || document.body;
 
-    var main = qs('.page__main') || qs('main') || document.body;
-    root = document.createElement('root');
-    root.setAttribute('data-cs-auto-root', 'true');
-    main.insertBefore(root, main.firstChild);
-    return root;
+    if (!STOREFRONT_TOKEN && sourceRoot) {
+      STOREFRONT_TOKEN = decodeStorefrontToken(sourceRoot.getAttribute('data-storefront-token') || '');
+    }
+
+    if (sourceRoot) {
+      sourceRoot.remove();
+    }
+
+    return pageMain;
   }
 
   function renderTokenMissing(root) {
@@ -387,17 +390,16 @@
   }
 
   function init() {
-    var root = ensureMountRoot();
-    if (!root || root.dataset.csStorefrontMounted) return;
-    root.dataset.csStorefrontMounted = 'true';
-    var main = root.closest('.page__main') || qs('.page__main');
-    if (main) main.classList.add('cs-storefront-mounted');
+    var mount = ensureMountRoot();
+    if (!mount || mount.dataset.csStorefrontMounted) return;
+    mount.dataset.csStorefrontMounted = 'true';
+    mount.classList.add('cs-storefront-mounted');
     if (!STOREFRONT_TOKEN) {
       console.warn('[swag-shop] Missing Storefront API token. Add window.CS_SWAG_CONFIG.storefrontToken or root[data-storefront-token].');
-      renderTokenMissing(root);
+      renderTokenMissing(mount);
       return;
     }
-    root.innerHTML = '<section class="cs-storefront cs-storefront--loading">Loading products…</section>';
+    mount.innerHTML = '<section class="cs-storefront cs-storefront--loading">Loading products…</section>';
     var slug = currentCollectionSlug();
     Promise.all([
       fetchJson('/collections', { size: 100 }),
@@ -407,14 +409,14 @@
       var collection = collections.find(function (item) { return item.slug === slug; }) || { name: DESIGN_COLLECTIONS[slug] || 'Code Snippets', slug: slug };
       var products = responses[1].products;
       var state = { collection: collection, products: products, selection: selectionFromUrl(products) };
-      render(root, state);
-      bind(root, state);
+      render(mount, state);
+      bind(mount, state);
       document.documentElement.classList.add('cs-storefront-ready');
       window.dispatchEvent(new CustomEvent('cs:storefront-ready', { detail: { collection: collection, products: products } }));
     }).catch(function (error) {
       console.error('[swag-shop] storefront failed', error);
-      root.innerHTML = '<section class="cs-storefront cs-storefront--error">Could not load products. Please refresh or use the native product list below.</section>';
-      if (main) main.classList.remove('cs-storefront-mounted');
+      mount.innerHTML = '<section class="cs-storefront cs-storefront--error">Could not load products. Please refresh or use the native product list below.</section>';
+      mount.classList.remove('cs-storefront-mounted');
     });
   }
 
