@@ -281,7 +281,7 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">One design, every available product. Pick the medium, choose the variant, then hand off to the native Fourthwall checkout.</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3–5 days</b></div></div></div>'
       + '</div></div>'
       + '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>'
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">2</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow"><label class="cs-qty"><input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label><div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Add to Cart — ' + escapeHtml(productType(product)) + '</button></div></div><p class="cs-ship">In stock · ships in 3–5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button">Copy link</button></div><div class="pdfx-acc"><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Print & materials</span><span class="pdfx-acc__plus">+</span></button><div class="pdfx-acc__body">Printed to order on premium blanks. Product options update from live Fourthwall variant data.</div></div><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Shipping & returns</span><span class="pdfx-acc__plus">+</span></button></div></div></div></div></div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">2</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow"><label class="cs-qty"><input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label><div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Add to Cart — ' + escapeHtml(productType(product)) + '</button></div></div><p class="cs-ship">In stock · ships in 3–5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button" data-copy-link="' + escapeHtml(window.location.href) + '">Copy link</button></div><div class="pdfx-acc"><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Print & materials</span><span class="pdfx-acc__plus">+</span></button><div class="pdfx-acc__body">Printed to order on premium blanks. Product options update from live Fourthwall variant data.</div></div><div class="pdfx-acc__row"><button type="button" class="pdfx-acc__head"><span class="pdfx-acc__check">✓</span><span class="pdfx-acc__title">Shipping & returns</span><span class="pdfx-acc__plus">+</span></button></div></div></div></div></div></section>'
       + '</section>';
   }
 
@@ -291,6 +291,7 @@
       var colorButton = event.target.closest('[data-color]');
       var sizeButton = event.target.closest('[data-size]');
       var addButton = event.target.closest('.cs-storefront__add');
+      var copyButton = event.target.closest('[data-copy-link]');
       if (productButton) {
         var product = state.products.find(function (item) { return item.slug === productButton.dataset.product; });
         state.selection = defaultSelection(product);
@@ -306,6 +307,8 @@
         render(root, state);
       } else if (addButton) {
         addSelectedToCart(addButton, state);
+      } else if (copyButton) {
+        copyShareLink(copyButton);
       }
     });
     root.addEventListener('change', function (event) {
@@ -314,6 +317,53 @@
         syncUrl(state.selection);
       }
     });
+  }
+
+  function copyShareLink(button) {
+    var value = window.location.href;
+    var originalLabel = button.textContent;
+
+    function updateLabel(label) {
+      button.textContent = label;
+      window.setTimeout(function () {
+        button.textContent = originalLabel || 'Copy link';
+      }, 1800);
+    }
+
+    function fallbackCopy() {
+      var textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', 'readonly');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-9999px';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      var copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch (error) {
+        copied = false;
+      }
+
+      document.body.removeChild(textarea);
+      if (copied) {
+        updateLabel('Copied');
+        return;
+      }
+      updateLabel('Copy failed');
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(value).then(function () {
+        updateLabel('Copied');
+      }).catch(fallbackCopy);
+      return;
+    }
+
+    fallbackCopy();
   }
 
   function syncUrl(selection) {
