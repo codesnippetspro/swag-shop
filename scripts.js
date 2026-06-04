@@ -253,7 +253,7 @@
 
     return '<label class="cs-qty">'
       + '<span class="cs-qty__select' + (isCustom ? ' is-hidden' : '') + '"><select aria-label="Quantity" data-qty-select>' + options.join('') + '</select><span class="cs-qty__chev" aria-hidden="true">⌄</span></span>'
-      + '<span class="cs-qty__input' + (isCustom ? '' : ' is-hidden') + '"><input type="number" min="10" max="99" value="' + escapeHtml(isCustom ? value : 10) + '" aria-label="Quantity" placeholder="Qty" data-qty-input></span>'
+      + '<span class="cs-qty__input' + (isCustom ? '' : ' is-hidden') + '"><input type="number" inputmode="numeric" pattern="[0-9]*" min="10" max="99" value="' + escapeHtml(isCustom ? value : 10) + '" aria-label="Quantity" placeholder="Qty" data-qty-input></span>'
       + '</label>';
   }
 
