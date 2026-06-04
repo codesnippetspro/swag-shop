@@ -149,6 +149,14 @@
     return String(value == null ? '' : value).toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
+  function shareSku(value) {
+    return String(value == null ? '' : value).trim().toUpperCase();
+  }
+
+  function sameShareSku(left, right) {
+    return stableParam(left) === stableParam(right);
+  }
+
   function variantColor(variant) {
     var color = variant && variant.attributes && variant.attributes.color;
     return color && color.name || '';
@@ -193,6 +201,7 @@
       productSlug: product && product.slug || '',
       productId: product && product.id || '',
       variantId: variant && variant.id || '',
+      variantSku: variant && variant.sku || '',
       color: variantColor(variant),
       size: variantSize(variant),
       quantity: Math.max(1, parseInt(quantity, 10) || 1)
@@ -202,6 +211,10 @@
   function selectedVariant(product, selection) {
     var variants = product.variants || [];
     if (!variants.length) return null;
+    if (selection.variantSku) {
+      var bySku = variants.find(function (variant) { return sameShareSku(variant.sku, selection.variantSku); });
+      if (bySku) return bySku;
+    }
     if (selection.variantId) {
       var selectedId = stableParam(selection.variantId);
       var byId = variants.find(function (variant) { return stableParam(variant.id) === selectedId; });
@@ -469,27 +482,44 @@
 
   function syncUrl(selection, product, variant) {
     var params = new URLSearchParams();
-    if (product && (product.id || product.slug)) params.set('p', stableParam(product.id || product.slug));
-    if (variant && variant.id) params.set('v', stableParam(variant.id));
-    params.set('q', selection.quantity || 1);
+    if (variant && variant.sku) {
+      params.set('v', shareSku(variant.sku));
+    } else {
+      if (product && (product.id || product.slug)) params.set('p', stableParam(product.id || product.slug));
+      if (variant && variant.id) params.set('v', stableParam(variant.id));
+    }
+    if (Math.max(1, parseInt(selection.quantity, 10) || 1) !== 1) {
+      params.set('q', selection.quantity || 1);
+    }
     window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
+    var shareCode = qs('.pdfx-url code');
+    var shareButton = qs('[data-copy-link]');
+    if (shareCode) shareCode.textContent = window.location.pathname + window.location.search;
+    if (shareButton) shareButton.setAttribute('data-copy-link', window.location.href);
   }
 
   function selectionFromUrl(products) {
     var params = new URLSearchParams(window.location.search);
     var productParam = params.get('p') || params.get('prod') || '';
-    var variantParam = params.get('v') || params.get('variant') || '';
-    var product = products.find(function (item) {
+    var variantParam = params.get('v') || params.get('sku') || params.get('variant') || '';
+    var product = null;
+    var variant = null;
+    if (variantParam) {
+      products.some(function (item) {
+        variant = (item.variants || []).find(function (candidate) {
+          return sameShareSku(candidate.sku, variantParam) || stableParam(candidate.id) === stableParam(variantParam);
+        });
+        if (variant) product = item;
+        return !!variant;
+      });
+    }
+    product = product || products.find(function (item) {
       return stableParam(item.id) === stableParam(productParam) || stableParam(item.slug) === stableParam(productParam) || item.slug === productParam;
     }) || products[0];
     var selection = defaultSelection(product);
-    var variant = null;
-    if (variantParam) {
-      variant = (product.variants || []).find(function (item) { return stableParam(item.id) === stableParam(variantParam); });
-    }
-    if (!variant && (params.get('color') || params.get('size'))) {
-      selection.color = params.get('color') || selection.color;
-      selection.size = params.get('size') || selection.size;
+    if (!variant && (params.get('color') || params.get('size') || params.get('c') || params.get('s'))) {
+      selection.color = params.get('color') || params.get('c') || selection.color;
+      selection.size = params.get('size') || params.get('s') || selection.size;
       variant = selectedVariant(product, selection);
     }
     if (variant) selection = selectionFromVariant(product, variant, selection.quantity);
