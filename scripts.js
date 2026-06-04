@@ -36,9 +36,25 @@ ${r?'Expression: "'+r+`"
 (function () {
   'use strict';
 
-  var STOREFRONT_TOKEN = (window.CS_SWAG_CONFIG && window.CS_SWAG_CONFIG.storefrontToken)
-    || (qs('root') && qs('root').getAttribute('data-storefront-token'))
-    || '';
+  function decodeStorefrontToken(value) {
+    value = (value || '').trim();
+    if (!value) return '';
+    var tokenPrefix = 'pt' + 'kn_';
+    if (value.indexOf(tokenPrefix) === 0) return value;
+
+    try {
+      var decoded = window.atob(value);
+      return decoded.indexOf(tokenPrefix) === 0 ? decoded : value;
+    } catch (error) {
+      return value;
+    }
+  }
+
+  var STOREFRONT_TOKEN = decodeStorefrontToken(
+    (window.CS_SWAG_CONFIG && window.CS_SWAG_CONFIG.storefrontToken)
+      || (qs('root') && qs('root').getAttribute('data-storefront-token'))
+      || ''
+  );
   var API_BASE = 'https://storefront-api.fourthwall.com/v1';
   var CURRENCY = 'USD';
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
