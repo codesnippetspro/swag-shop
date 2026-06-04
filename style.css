@@ -249,6 +249,7 @@
 .pdfx-pdpart__c.bl { bottom: 22px; left: 26px; }
 .pdfx-pdpart__c.br { bottom: 22px; right: 26px; }
 .pdfx-pdp__info { display: flex; flex-direction: column; }
+.pdfx-pdp__info .cs-h1 { margin-top: 12px; }
 .pdfx-eyebrowpill { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; background: var(--tile-blush); color: var(--color-primary); font-weight: 700; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 15px; border-radius: 999px; }
 .pdfx-eyebrowpill::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--color-primary); }
 .pdfx-pdp__rate { display: flex; align-items: center; gap: 10px; margin: 14px 0 18px; font-size: 14px; color: var(--text-muted); }
@@ -267,7 +268,7 @@
 .pdfx-stephead .hint { font-size: 15px; color: var(--text-muted); max-width: 300px; text-align: right; margin: 0; line-height: 1.45; }
 .pdfx-medrail { display: flex; gap: 16px; overflow-x: auto; padding: 6px 0 14px; scroll-snap-type: x proximity; }
 .pdfx-medslot { flex: 0 0 230px; border-radius: 16px; padding: 8px; scroll-snap-align: start; }
-.pdfx-medslot--on { background: var(--tile-blush); }
+.pdfx-medslot--on { background: transparent; }
 .pdfx-medcard { width: 100%; background: #fff; border: 1.5px solid var(--border-light); border-radius: 12px; padding: 18px; cursor: pointer; transition: border-color .12s, box-shadow .12s; height: 100%; display: flex; flex-direction: column; text-align: left; color: var(--color-on-background); }
 .pdfx-medcard:hover { border-color: var(--border-mid); box-shadow: var(--shadow-card); }
 .pdfx-medcard--on { border-color: var(--color-primary); border-width: 2px; padding: 17px; }
@@ -291,7 +292,7 @@
 .cs-storefront__swatch span { width: 100%; height: 100%; border-radius: 999px; display: block; }
 .cs-storefront__swatch.is-active { box-shadow: 0 0 0 3px var(--color-primary); transform: scale(0.84); background: transparent; }
 .cs-storefront__sizes { display: flex; gap: 10px; flex-wrap: wrap; }
-.cs-storefront__size { min-width: 56px; height: 46px; padding: 0 12px; border-radius: 8px; border: 1.5px solid var(--border-mid); background: #fff; font-weight: 500; font-size: 15px; cursor: pointer; }
+.cs-storefront__size { min-width: 56px; height: 46px; padding: 0 12px; border-radius: 8px; border: 1.5px solid var(--border-mid); background: #fff; color: var(--color-on-background); font-weight: 500; font-size: 15px; cursor: pointer; }
 .cs-storefront__size.is-active { border: 2px solid var(--color-on-background); background: #fff; color: var(--color-on-background); }
 .cs-buyrow { display: flex; gap: 14px; align-items: center; }
 .cs-buyrow__price { margin-right: 4px; font-weight: 700; font-size: 26px; }
@@ -366,8 +367,8 @@
   .pdfx-pdp__fact { min-width: calc(50% - 11px); }
   .cs-section { padding: 44px 0; }
   .pdfx-stephead { align-items: flex-start; }
-  .pdfx-medrail { gap: 12px; margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px; }
-  .pdfx-medslot { flex-basis: 190px; padding: 6px; }
+  .pdfx-medrail { gap: 8px; margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px; }
+  .pdfx-medslot { flex-basis: 190px; padding: 3px; }
   .pdfx-medcard { padding: 14px; }
   .pdfx-medcard--on { padding: 13px; }
   .pdfx-acc__body { max-width: none; }
