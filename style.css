@@ -4,11 +4,11 @@
 }
 
 /* ============================================
-   Newsletter section — styled to match
+   Newsletter section, styled to match
    codesnippets.pro footer newsletter
    ============================================ */
 
-/* Outer section wrapper — match the teal background */
+/* Outer section wrapper, match the teal background */
 .newsletter.section-fw-section-newsletter-342cb627-7695-45e8-b2de-d9654608c469-padding {
   padding: 0 !important;
 }
@@ -20,7 +20,7 @@
   padding: 28px 0 !important;
 }
 
-/* Make the content area a flex row — heading left, form right */
+/* Make the content area a flex row: heading left, form right */
 .newsletter__content {
   display: flex !important;
   flex-direction: row !important;
@@ -40,7 +40,7 @@
   flex: 0 0 auto !important;
 }
 
-/* Heading style — match codesnippets.pro */
+/* Heading style, match codesnippets.pro */
 .newsletter__heading {
   color: #FFFFFF !important;
   font-size: 27px !important;
@@ -53,13 +53,13 @@
   margin: 0 !important;
 }
 
-/* Form area — right side */
+/* Form area, right side */
 .newsletter__form {
   margin: 0 !important;
   flex: 0 0 auto !important;
 }
 
-/* Input-button container — inline layout */
+/* Input-button container, inline layout */
 .newsletter-form__input-button-container {
     gap: 0 !important;
     display: flex;
@@ -73,7 +73,7 @@
   flex: 0 1 387px !important;
 }
 
-/* Input field div — white background, bordered */
+/* Input field div, white background, bordered */
 .newsletter-form  .input-field.input-field--base {
   background-color: #FFFFFF !important;
   border: 3px solid #FFFFFF !important;
@@ -104,7 +104,7 @@
   flex: 0 0 auto !important;
 }
 
-/* Subscribe button — match codesnippets.pro */
+/* Subscribe button, match codesnippets.pro */
 .newsletter-form .button.button--primary.button--large.button--expand {
   background-color: rgb(213, 112, 76) !important;
   color: #FFFFFF !important;
