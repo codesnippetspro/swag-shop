@@ -45,6 +45,20 @@
   var API_BASE = 'https://storefront-api.fourthwall.com/v1';
   var CURRENCY = 'USD';
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
+  var DESIGN_COLLECTIONS = {
+    'brain-100-focus-0': 'Brain 100% • Focus 0%',
+    'coder': 'Coder',
+    'emoji-code': 'Emoji Code',
+    'error-404': 'Error 404',
+    'im-this-old': "I'm this old",
+    'in-a-relationship': 'In a relationship',
+    'make-it-work': 'Make it work',
+    'my-therapist-says': 'My therapist says',
+    'powered-by-coffee': 'Powered by coffee',
+    'snippet': 'Snippet',
+    'snippet-activated': 'Snippet Activated',
+    'tabs-over-spaces': 'Tabs over spaces'
+  };
 
   function qs(selector, root) {
     return (root || document).querySelector(selector);
@@ -319,6 +333,36 @@
     });
   }
 
+  function publicProducts(products) {
+    return (products || []).filter(function (product) {
+      return product.access && product.access.type === 'PUBLIC' && product.state && product.state.type === 'AVAILABLE';
+    });
+  }
+
+  function productMatchesDesign(product, slug) {
+    return designKey(product) === slug || (product.slug || '').indexOf(slug + '-') === 0;
+  }
+
+  function loadCollectionProducts(slug) {
+    return fetchJson('/collections/' + encodeURIComponent(slug) + '/products', { size: 100, currency: CURRENCY })
+      .then(function (response) {
+        return { products: publicProducts(response.results), source: slug };
+      })
+      .catch(function () {
+        if (!DESIGN_COLLECTIONS[slug]) throw new Error('Collection products unavailable for ' + slug);
+
+        return fetchJson('/collections/all/products', { size: 100, currency: CURRENCY })
+          .then(function (response) {
+            return {
+              products: publicProducts(response.results).filter(function (product) {
+                return productMatchesDesign(product, slug);
+              }),
+              source: 'all-filtered'
+            };
+          });
+      });
+  }
+
   function init() {
     var root = qs('root');
     if (!root || root.dataset.csStorefrontMounted) return;
@@ -333,13 +377,11 @@
     var slug = currentCollectionSlug();
     Promise.all([
       fetchJson('/collections', { size: 100 }),
-      fetchJson('/collections/' + encodeURIComponent(slug) + '/products', { size: 100, currency: CURRENCY })
+      loadCollectionProducts(slug)
     ]).then(function (responses) {
       var collections = responses[0].results || [];
-      var collection = collections.find(function (item) { return item.slug === slug; }) || { name: 'Code Snippets', slug: slug };
-      var products = (responses[1].results || []).filter(function (product) {
-        return product.access && product.access.type === 'PUBLIC' && product.state && product.state.type === 'AVAILABLE';
-      });
+      var collection = collections.find(function (item) { return item.slug === slug; }) || { name: DESIGN_COLLECTIONS[slug] || 'Code Snippets', slug: slug };
+      var products = responses[1].products;
       var state = { collection: collection, products: products, selection: selectionFromUrl(products) };
       render(root, state);
       bind(root, state);
