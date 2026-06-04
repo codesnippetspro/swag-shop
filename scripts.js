@@ -242,6 +242,21 @@
     return colorHtml + sizeHtml;
   }
 
+  function renderQuantityControl(quantity) {
+    var value = Math.max(1, parseInt(quantity, 10) || 1);
+    var isCustom = value >= 10;
+    var options = [];
+    for (var index = 1; index <= 9; index++) {
+      options.push('<option value="' + index + '"' + (value === index ? ' selected' : '') + '>' + index + '</option>');
+    }
+    options.push('<option value="more"' + (isCustom ? ' selected' : '') + '>10+</option>');
+
+    return '<label class="cs-qty">'
+      + '<span class="cs-qty__select' + (isCustom ? ' is-hidden' : '') + '"><select aria-label="Quantity" data-qty-select>' + options.join('') + '</select><span class="cs-qty__chev" aria-hidden="true">⌄</span></span>'
+      + '<span class="cs-qty__input' + (isCustom ? '' : ' is-hidden') + '"><input type="number" min="10" max="99" value="' + escapeHtml(isCustom ? value : 10) + '" aria-label="Quantity" placeholder="Qty" data-qty-input></span>'
+      + '</label>';
+  }
+
 
   function isHomePage() {
     return window.location.pathname === '/' || window.location.pathname === '';
@@ -370,7 +385,7 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">' + escapeHtml(heroBlurb) + '</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow"><label class="cs-qty"><input type="number" min="1" max="99" value="' + escapeHtml(state.selection.quantity) + '"></label><div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button" data-copy-link="' + escapeHtml(window.location.href) + '">Copy link</button></div></div></div>' + renderProductAccordion(product) + '</div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button" data-copy-link="' + escapeHtml(window.location.href) + '">Copy link</button></div></div></div>' + renderProductAccordion(product) + '</div></section>'
       + '</section>';
   }
 
@@ -429,7 +444,17 @@
       }
     });
     root.addEventListener('change', function (event) {
-      if (event.target.matches('.cs-storefront__qty input, .cs-qty input')) {
+      if (event.target.matches('[data-qty-select]')) {
+        var selectValue = event.target.value;
+        state.selection.quantity = selectValue === 'more' ? 10 : Math.max(1, parseInt(selectValue, 10) || 1);
+        var selectProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
+        syncUrl(state.selection, selectProduct, selectedVariant(selectProduct, state.selection));
+        render(root, state);
+        if (selectValue === 'more') {
+          var qtyInput = root.querySelector('[data-qty-input]');
+          if (qtyInput) qtyInput.focus();
+        }
+      } else if (event.target.matches('[data-qty-input], .cs-storefront__qty input, .cs-qty input')) {
         state.selection.quantity = Math.max(1, parseInt(event.target.value, 10) || 1);
         var qtyProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         syncUrl(state.selection, qtyProduct, selectedVariant(qtyProduct, state.selection));
