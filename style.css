@@ -220,7 +220,7 @@
 .cs-btn--large { height: 56px; padding: 0 24px; font-size: 17px; }
 .cs-btn--full { width: 100%; }
 .cs-btn--primary { background: var(--color-primary); color: #fff; }
-.cs-btn--primary:hover { background: #c0613f; color: inherit; }
+.cs-btn--primary:hover { background: #c0613f; color: #fff; }
 .cs-btn--outline { background: transparent; color: var(--color-on-background); border: 1.5px solid var(--border-mid); }
 .cs-btn--ghostlight { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.35); }
 .cs-btn--ghostlight:hover { border-color: #fff; background: rgba(255,255,255,0.08); color: inherit; }
