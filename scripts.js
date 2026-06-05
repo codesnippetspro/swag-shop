@@ -385,7 +385,7 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">' + escapeHtml(heroBlurb) + '</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url"><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code><button type="button" data-copy-link="' + escapeHtml(window.location.href) + '">Copy link</button></div></div></div>' + renderProductAccordion(product) + '</div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url" role="button" tabindex="0" data-copy-link="' + escapeHtml(window.location.href) + '" aria-label="Copy link"><button type="button" aria-label="Copy link" title="Copy link"><i class="gg-copy" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div></div></div>' + renderProductAccordion(product) + '</div></section>'
       + '</section>';
   }
 
@@ -413,7 +413,7 @@
       var colorButton = event.target.closest('[data-color]');
       var sizeButton = event.target.closest('[data-size]');
       var addButton = event.target.closest('.cs-storefront__add');
-      var copyButton = event.target.closest('[data-copy-link]');
+      var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       var accordionButton = event.target.closest('.pdfx-acc__head');
       if (productButton) {
         var product = state.products.find(function (item) { return item.slug === productButton.dataset.product; });
@@ -432,8 +432,8 @@
         render(root, state);
       } else if (addButton) {
         addSelectedToCart(addButton, state);
-      } else if (copyButton) {
-        copyShareLink(copyButton);
+      } else if (copyTarget) {
+        copyShareLink(copyTarget);
       } else if (accordionButton) {
         var body = accordionButton.parentElement && accordionButton.parentElement.querySelector('.pdfx-acc__body');
         var marker = accordionButton.querySelector('.pdfx-acc__plus');
@@ -442,6 +442,12 @@
           if (marker) marker.textContent = body.hidden ? '+' : '−';
         }
       }
+    });
+    root.addEventListener('keydown', function (event) {
+      var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
+      if (!copyTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      copyShareLink(copyTarget);
     });
     root.addEventListener('change', function (event) {
       if (event.target.matches('[data-qty-select]')) {
@@ -462,14 +468,21 @@
     });
   }
 
-  function copyShareLink(button) {
+  function copyShareLink(target) {
     var value = window.location.href;
-    var originalLabel = button.textContent;
+    var button = target.querySelector('button') || target;
+    var originalLabel = target.getAttribute('aria-label') || 'Copy link';
 
     function updateLabel(label) {
-      button.textContent = label;
+      target.setAttribute('aria-label', label);
+      button.setAttribute('aria-label', label);
+      button.setAttribute('title', label);
+      target.classList.toggle('pdfx-url--copied', label === 'Copied');
       window.setTimeout(function () {
-        button.textContent = originalLabel || 'Copy link';
+        target.setAttribute('aria-label', originalLabel);
+        button.setAttribute('aria-label', originalLabel);
+        button.setAttribute('title', originalLabel);
+        target.classList.remove('pdfx-url--copied');
       }, 1800);
     }
 
