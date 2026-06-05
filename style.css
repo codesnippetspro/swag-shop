@@ -421,7 +421,7 @@
   .pdfx-medcard__sel { font-size: 9px; padding: 3px 8px; }
   .pdfx-cfgrid { gap: 22px; margin-top: 18px; }
   .pdfx-cfgprev { border-radius: 12px; }
-  .pdfx-cfg { position: relative; padding-top: 99px; }
+  .pdfx-cfg { position: relative; padding-top: 85px; }
   .pdfx-imgrail { position: absolute; top: 0; left: 0; right: 0; grid-auto-columns: 75px; gap: 8px; margin-top: 0; padding: 0 2px 2px; }
   .pdfx-imgthumb { width: 75px; height: 75px; min-width: 75px; padding: 5px; border-radius: 8px; }
   .cs-storefront__swatches, .cs-storefront__sizes { gap: 9px; }
