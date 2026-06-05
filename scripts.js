@@ -345,20 +345,25 @@
   }
 
   function renderHome(root, state) {
-    var cards = state.collections.filter(function (collection) {
+    var designs = state.collections.filter(function (collection) {
       return DESIGN_COLLECTIONS[collection.slug];
-    }).map(function (collection) {
+    });
+    var hero = designs[0] || null;
+    var heroName = hero ? displayCollectionName(hero.slug, hero.name || hero.title) : 'Code Snippets';
+    var heroCount = hero ? state.counts[hero.slug] || hero.productsCount || hero.products_count || 0 : 0;
+    var heroHref = hero ? '/collections/' + escapeHtml(hero.slug) : '#cs-designs';
+    var cards = designs.map(function (collection) {
       var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
       var name = displayCollectionName(collection.slug, collection.name || collection.title);
       return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
-        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + name + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
-        + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span><span class="cs-btn cs-btn--outline cs-btn--small">View</span></div>'
+        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + designCardText(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
+        + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span></div><span class="cs-btn cs-btn--primary cs-btn--small cs-btn--full">View</span>'
         + '</a>';
     }).join('');
 
     root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
-      + '<div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h1 class="cs-h2">Open a design to configure it</h1><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div>'
-      + '<div class="cs-grid cs-grid--4">' + cards + '</div>'
+      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">V3 · Configure flow</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">One design, the whole catalog. Open a design and configure it across every product it is printed on, pick a medium, set the color and size, and add it to your cart from a single page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '"><div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + designCardText(heroName) + '</span></div></div></div></a></div></section>'
+      + '<section class="cs-section cs-home-designs" id="cs-designs"><div class="cs-wrapper"><div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h2 class="cs-h2">Open a design to configure it</h2><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
       + '</section>';
   }
 
