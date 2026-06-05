@@ -161,7 +161,7 @@
     }
 
     (variant && variant.images || []).forEach(add);
-    (product.images || []).forEach(add);
+    if (!images.length) (product.images || []).forEach(add);
     return images;
   }
 
