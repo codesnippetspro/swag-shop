@@ -340,8 +340,8 @@
 
   function designCardText(name) {
     var words = String(name || '').split(/\s+/).filter(Boolean);
-    if (words.length <= 2) return words.join('<br>');
-    return words.slice(0, 4).join('<br>');
+    if (words.length <= 2) return words.join(' ');
+    return words.slice(0, 4).join(' ');
   }
 
   function randomItem(items) {
