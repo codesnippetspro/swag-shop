@@ -43,6 +43,7 @@
   var API_BASE = 'https://storefront-api.fourthwall.com/v1';
   var CURRENCY = 'USD';
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
+  var IMAGE_CACHE = {};
   var DESIGN_COLLECTIONS = {
     'brain-100-focus-0': 'Brain 100% • Focus 0%',
     'coder': 'Coder',
@@ -144,6 +145,14 @@
     return image ? (image.transformedUrl || image.url || '') : '';
   }
 
+  function preloadImage(url) {
+    if (!url || IMAGE_CACHE[url]) return;
+    var image = new Image();
+    image.decoding = 'async';
+    image.src = url;
+    IMAGE_CACHE[url] = image;
+  }
+
   function firstImage(product, variant) {
     var image = variant && variant.images && variant.images[0] || product.images && product.images[0];
     return imageUrl(image);
@@ -162,7 +171,19 @@
 
     (variant && variant.images || []).forEach(add);
     if (!images.length) (product.images || []).forEach(add);
+    images.forEach(preloadImage);
     return images;
+  }
+
+  function preloadProductImages(product) {
+    (product && product.images || []).forEach(function (image) { preloadImage(imageUrl(image)); });
+    (product && product.variants || []).forEach(function (variant) {
+      (variant.images || []).forEach(function (image) { preloadImage(imageUrl(image)); });
+    });
+  }
+
+  function preloadProductsImages(products) {
+    (products || []).forEach(preloadProductImages);
   }
 
   function stableParam(value) {
@@ -341,8 +362,9 @@
 
   function renderProductPreview(product, variant, selection) {
     var image = selection && selection.previewImageUrl || firstImage(product, variant);
+    preloadImage(image);
     return '<div class="pdfx-cfgprev">'
-      + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
+      + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '" loading="eager" decoding="sync">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
       + '<span class="pdfx-cfgprev__tag">' + escapeHtml(productType(product)) + '</span>'
       + '</div>';
   }
@@ -353,7 +375,7 @@
     var active = selection && selection.previewImageUrl || firstImage(product, variant);
     return '<div class="pdfx-imgrail" aria-label="Product images">' + images.map(function (image, index) {
       var current = image === active ? ' is-active' : '';
-      return '<button type="button" class="pdfx-imgthumb' + current + '" data-preview-image="' + escapeHtml(image) + '" aria-label="Show product image ' + escapeHtml(index + 1) + '"><img src="' + escapeHtml(image) + '" alt=""></button>';
+      return '<button type="button" class="pdfx-imgthumb' + current + '" data-preview-image="' + escapeHtml(image) + '" aria-label="Show product image ' + escapeHtml(index + 1) + '"><img src="' + escapeHtml(image) + '" alt="" width="145" height="145" loading="eager" decoding="sync"></button>';
     }).join('') + '</div>';
   }
 
@@ -449,6 +471,18 @@
     state.selection = selectionFromVariant(product, variant, state.selection.quantity);
   }
 
+  function updatePreviewImage(root, url) {
+    if (!url) return;
+    preloadImage(url);
+    var preview = root.querySelector('.pdfx-cfgprev img');
+    if (preview && preview.getAttribute('src') !== url) {
+      preview.src = url;
+    }
+    root.querySelectorAll('.pdfx-imgthumb').forEach(function (button) {
+      button.classList.toggle('is-active', button.dataset.previewImage === url);
+    });
+  }
+
   function variantForOption(product, selection, optionName, optionValue) {
     var colors = uniqueColors(product);
     var sizes = uniqueSizes(product);
@@ -491,7 +525,7 @@
         addSelectedToCart(addButton, state);
       } else if (previewButton) {
         state.selection.previewImageUrl = previewButton.dataset.previewImage;
-        render(root, state);
+        updatePreviewImage(root, state.selection.previewImageUrl);
       } else if (copyTarget) {
         copyShareLink(copyTarget);
       } else if (accordionButton) {
@@ -778,6 +812,7 @@
 
     request.then(function (state) {
       if (state.page !== 'home') {
+        preloadProductsImages(state.products);
         var initialProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         syncUrl(state.selection, initialProduct, selectedVariant(initialProduct, state.selection));
       }
