@@ -33,6 +33,7 @@
   margin: 0 auto !important;
   width: 100% !important;
   text-align: left !important;
+  box-sizing: border-box !important;
 }
 
 /* Left column: heading */
@@ -123,7 +124,7 @@
 }
 
 /* Responsive: stack on smaller screens */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .newsletter__content {
     flex-direction: column !important;
     text-align: center !important;
@@ -414,10 +415,6 @@
   .pdfx-cfg { position: relative; padding-top: 169px; }
   .pdfx-imgrail { position: absolute; top: 0; left: 0; right: 0; margin-top: 0; }
   .pdfx-acc__body { max-width: none; }
-  .newsletter__content { flex-direction: column !important; align-items: stretch !important; padding: 24px 20px !important; }
-  .newsletter-form__input-button-container { flex-direction: column !important; gap: 10px !important; }
-  .newsletter-form__input { flex-basis: auto !important; }
-  .newsletter-form .input-field.input-field--base, .newsletter-form .button.button--primary.button--large.button--expand { border-radius: 5px !important; width: 100% !important; }
 }
 
 @media (min-width: 641px) and (max-width: 980px) {
@@ -428,6 +425,16 @@
   .cs-hero__cta .cs-btn { min-height: 52px; padding-left: 14px; padding-right: 14px; font-size: 15px; }
   .cs-hero__stage { width: 280px; padding: 26px; }
   .cs-hero__stage .cs-meme__block { font-size: clamp(30px, 4vw, 38px); }
+  .newsletter__content { flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 16px !important; padding: 24px 20px !important; text-align: center !important; }
+  .newsletter__header, .newsletter__heading { text-align: center !important; }
+  .newsletter__heading { font-size: 24px !important; }
+  .newsletter__form { width: min(100%, 560px) !important; }
+  .newsletter-form__input-button-container { flex-direction: row !important; flex-wrap: nowrap !important; gap: 0 !important; }
+  .newsletter-form__input { flex: 1 1 auto !important; min-width: 0 !important; }
+  .newsletter-form__button { flex: 0 0 auto !important; }
+  .newsletter-form .input-field.input-field--base { border-radius: 5px 0 0 5px !important; height: 52px !important; }
+  .newsletter-form .input-field__input { border-radius: 5px 0 0 5px !important; height: 52px !important; font-size: 16px !important; }
+  .newsletter-form .button.button--primary.button--large.button--expand { border-radius: 0 5px 5px 0 !important; width: auto !important; min-width: 120px !important; height: 52px !important; font-size: 18px !important; padding: 0 20px !important; }
 }
 
 @media (max-width: 640px) {
