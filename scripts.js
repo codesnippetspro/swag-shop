@@ -349,7 +349,7 @@
       var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
       var name = displayCollectionName(collection.slug, collection.name || collection.title);
       return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
-        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + designCardText(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
+        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + name + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
         + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span><span class="cs-btn cs-btn--outline cs-btn--small">View</span></div>'
         + '</a>';
     }).join('');
