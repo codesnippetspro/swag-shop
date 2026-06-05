@@ -1,4 +1,4 @@
-@import url('https://cdn.jsdelivr.net/npm/css.gg/icons/css/copy.css');
+@import url('https://cdn.jsdelivr.net/npm/css.gg/icons/css/share.css');
 
 .tile__image .image__badges {
   top: 10px;
@@ -327,7 +327,7 @@
 .pdfx-url { display: flex; align-items: center; gap: 10px; margin-top: 22px; background: var(--bg-section); border-radius: 8px; padding: 11px 14px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; }
 .pdfx-url code { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: var(--text-mono-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pdfx-url button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 24px; height: 24px; border: none; background: none; color: var(--color-primary); cursor: pointer; padding: 0; }
-.pdfx-url .gg-copy { --ggs: 0.78; }
+.pdfx-url .gg-share { --ggs: 0.78; }
 .pdfx-url--copied { outline: 1px solid rgba(var(--color-primary-rgb), 0.35); }
 .pdfx-imgrail { flex: 1 1 auto; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 145px; gap: 12px; align-content: end; align-items: end; justify-content: start; margin-top: 18px; overflow-x: auto; padding: 4px 2px 2px; scroll-snap-type: x proximity; }
 .pdfx-imgrail--empty { display: block; }
