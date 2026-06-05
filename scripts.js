@@ -249,6 +249,30 @@
     }) || variants[0];
   }
 
+  function stockQuantity(stock) {
+    if (!stock) return null;
+    var fields = ['quantity', 'availableQuantity', 'available', 'count'];
+    for (var index = 0; index < fields.length; index++) {
+      var value = stock[fields[index]];
+      if (value !== undefined && value !== null && value !== '') return parseInt(value, 10);
+    }
+    return null;
+  }
+
+  function variantStockStatus(variant) {
+    var stock = variant && variant.stock || {};
+    var type = String(stock.type || '').toUpperCase();
+    var quantity = stockQuantity(stock);
+    if (type === 'UNLIMITED' || quantity > 3) return { available: true, label: 'in stock' };
+    if (quantity > 0 && quantity <= 3) return { available: true, label: 'Only ' + quantity + ' ' + (quantity === 1 ? 'item' : 'items') + ' left' };
+    return { available: false, label: 'Sold out' };
+  }
+
+  function renderStockNote(status) {
+    if (!status.available) return '<p class="cs-ship cs-ship--soldout">Sold out</p>';
+    return '<p class="cs-ship">' + escapeHtml(status.label) + ' · ships in 3 to 5 days · free over $50</p>';
+  }
+
   function renderProductOptions(product, selection) {
     var colors = uniqueColors(product);
     var sizes = uniqueSizes(product);
@@ -404,6 +428,7 @@
       return;
     }
     var variant = selectedVariant(product, state.selection);
+    var stockStatus = variantStockStatus(variant);
     var collectionName = displayCollectionName(state.collection.slug, state.collection.name || state.collection.title);
     var hasProductPicker = state.products.length > 1;
     var pickerHtml = hasProductPicker ? '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>' : '';
@@ -416,7 +441,7 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">' + escapeHtml(heroBlurb) + '</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Copy link"><i class="gg-copy" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Copy link"><i class="gg-copy" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>'
       + '</section>';
   }
 
@@ -631,7 +656,8 @@
   function addSelectedToCart(button, state) {
     var product = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
     var variant = selectedVariant(product, state.selection);
-    if (!variant || !variant.id) return;
+    var stockStatus = variantStockStatus(variant);
+    if (!variant || !variant.id || !stockStatus.available) return;
     var quantity = Math.max(1, state.selection.quantity || 1);
     button.disabled = true;
     button.textContent = 'Adding…';
