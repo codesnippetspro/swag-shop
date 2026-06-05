@@ -361,7 +361,10 @@
 .cs-skeleton-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; margin-top: 28px; }
 .cs-skeleton-grid span { aspect-ratio: 1 / 1; min-height: 190px; }
 @keyframes cs-skeleton-shimmer { 100% { transform: translateX(100%); } }
-@media (max-width: 760px) { .cs-skeleton-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+@media (max-width: 760px) { 
+  .cs-skeleton-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .cs-storefront--loading {padding: 56px 16px !important;}
+}
 
 
 /* Mobile overflow guards */
