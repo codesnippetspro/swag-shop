@@ -325,7 +325,9 @@
 
 
   function isHomePage() {
-    return window.location.pathname === '/' || window.location.pathname === '';
+    var segments = window.location.pathname.split('/').filter(Boolean);
+    if (!segments.length) return true;
+    return segments.length === 1 && /^[a-z]{2}(?:-[a-z0-9]{2,4})?$/i.test(segments[0]);
   }
 
   function displayCollectionName(slug, fallback) {
