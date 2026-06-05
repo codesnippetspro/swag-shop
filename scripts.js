@@ -555,7 +555,7 @@
         state.selection.previewImageUrl = previewButton.dataset.previewImage;
         updatePreviewImage(root, state.selection.previewImageUrl);
       } else if (copyTarget) {
-        copyShareLink(copyTarget);
+        shareOrCopyLink(copyTarget);
       } else if (accordionButton) {
         var body = accordionButton.parentElement && accordionButton.parentElement.querySelector('.pdfx-acc__body');
         var marker = accordionButton.querySelector('.pdfx-acc__plus');
@@ -569,7 +569,7 @@
       var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       if (!copyTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
       event.preventDefault();
-      copyShareLink(copyTarget);
+      shareOrCopyLink(copyTarget);
     });
     root.addEventListener('change', function (event) {
       if (event.target.matches('[data-qty-select]')) {
@@ -590,8 +590,25 @@
     });
   }
 
-  function copyShareLink(target) {
+  function shouldUseNativeShare() {
+    if (!navigator.share) return false;
+    return window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse), (max-width: 767px)').matches;
+  }
+
+  function shareOrCopyLink(target) {
     var value = window.location.href;
+    if (shouldUseNativeShare()) {
+      navigator.share({ title: document.title || 'Code Snippets Swag Shop', url: value }).catch(function (error) {
+        if (error && error.name === 'AbortError') return;
+        copyShareLink(target, value);
+      });
+      return;
+    }
+    copyShareLink(target, value);
+  }
+
+  function copyShareLink(target, value) {
+    value = value || window.location.href;
     var button = target.querySelector('button') || target;
     var originalLabel = button.getAttribute('aria-label') || 'Copy link';
 
