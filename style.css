@@ -265,7 +265,7 @@
 .pdfx-steppill .n { width: 22px; height: 22px; border-radius: 999px; background: var(--color-secondary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
 .pdfx-stephead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin: 18px 0 24px; }
 .pdfx-stephead h2 { font-size: 38px; }
-.pdfx-stephead .hint { font-size: 15px; color: var(--text-muted); max-width: 300px; text-align: right; margin: 0; line-height: 1.45; }
+.pdfx-stephead .hint { font-size: 15px; color: var(--text-muted); max-width: 50%; text-align: right; margin: 0; line-height: 1.45; }
 .pdfx-medrail { display: flex; gap: 16px; overflow-x: auto; padding: 6px 0 14px; scroll-snap-type: x proximity; }
 .pdfx-medslot { flex: 0 0 230px; border-radius: 16px; padding: 8px; scroll-snap-align: start; }
 .pdfx-medslot--on { background: transparent; }
