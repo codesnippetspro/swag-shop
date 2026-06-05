@@ -140,9 +140,29 @@
     }).format(price.value || 0);
   }
 
+  function imageUrl(image) {
+    return image ? (image.transformedUrl || image.url || '') : '';
+  }
+
   function firstImage(product, variant) {
     var image = variant && variant.images && variant.images[0] || product.images && product.images[0];
-    return image ? (image.transformedUrl || image.url) : '';
+    return imageUrl(image);
+  }
+
+  function productImagesForVariant(product, variant) {
+    var seen = {};
+    var images = [];
+
+    function add(image) {
+      var url = imageUrl(image);
+      if (!url || seen[url]) return;
+      seen[url] = true;
+      images.push(url);
+    }
+
+    (variant && variant.images || []).forEach(add);
+    (product.images || []).forEach(add);
+    return images;
   }
 
   function stableParam(value) {
@@ -204,6 +224,7 @@
       variantSku: variant && variant.sku || '',
       color: variantColor(variant),
       size: variantSize(variant),
+      previewImageUrl: firstImage(product, variant),
       quantity: Math.max(1, parseInt(quantity, 10) || 1)
     };
   }
@@ -294,12 +315,22 @@
       + '</section>';
   }
 
-  function renderProductPreview(product, variant) {
-    var image = firstImage(product, variant);
+  function renderProductPreview(product, variant, selection) {
+    var image = selection && selection.previewImageUrl || firstImage(product, variant);
     return '<div class="pdfx-cfgprev">'
       + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
       + '<span class="pdfx-cfgprev__tag">' + escapeHtml(productType(product)) + '</span>'
       + '</div>';
+  }
+
+  function renderProductImageSlider(product, variant, selection) {
+    var images = productImagesForVariant(product, variant);
+    if (images.length < 2) return '<div class="pdfx-imgrail pdfx-imgrail--empty" aria-hidden="true"></div>';
+    var active = selection && selection.previewImageUrl || firstImage(product, variant);
+    return '<div class="pdfx-imgrail" aria-label="Product images">' + images.map(function (image, index) {
+      var current = image === active ? ' is-active' : '';
+      return '<button type="button" class="pdfx-imgthumb' + current + '" data-preview-image="' + escapeHtml(image) + '" aria-label="Show product image ' + escapeHtml(index + 1) + '"><img src="' + escapeHtml(image) + '" alt=""></button>';
+    }).join('') + '</div>';
   }
 
   function sanitizeProductHtml(html) {
@@ -385,7 +416,7 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">' + escapeHtml(heroBlurb) + '</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Copy link"><i class="gg-copy" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div></div></div>' + renderProductAccordion(product) + '</div></section>'
+      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '">Checkout now</button></div></div><p class="cs-ship">In stock · ships in 3 to 5 days · free over $50</p><div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Copy link"><i class="gg-copy" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>'
       + '</section>';
   }
 
@@ -413,6 +444,7 @@
       var colorButton = event.target.closest('[data-color]');
       var sizeButton = event.target.closest('[data-size]');
       var addButton = event.target.closest('.cs-storefront__add');
+      var previewButton = event.target.closest('[data-preview-image]');
       var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       var accordionButton = event.target.closest('.pdfx-acc__head');
       if (productButton) {
@@ -432,6 +464,9 @@
         render(root, state);
       } else if (addButton) {
         addSelectedToCart(addButton, state);
+      } else if (previewButton) {
+        state.selection.previewImageUrl = previewButton.dataset.previewImage;
+        render(root, state);
       } else if (copyTarget) {
         copyShareLink(copyTarget);
       } else if (accordionButton) {
