@@ -255,8 +255,9 @@
 .cs-meme__block { max-width: 100%; font-family: var(--font-display); font-weight: 700; line-height: 1.0; border-radius: 0.24em; white-space: normal; overflow-wrap: anywhere; letter-spacing: -0.01em; font-size: clamp(24px, 2.25vw, 34px); color: var(--teal-heading); text-align: center; }
 .cs-dcard:hover .cs-meme__stack { transform: scale(1.03); }
 
+.cs-pdp-wrapper { background-color: var(--bg-section); }
 .pdfx-pdp { padding: 28px 0 0; }
-.pdfx-pdp__top { display: grid; grid-template-columns: 1.04fr 0.96fr; gap: 56px; align-items: center; padding-bottom: 20px; }
+.pdfx-pdp__top { display: grid; grid-template-columns: 1.04fr 0.96fr; gap: 56px; align-items: center; padding: 20px 0; }
 .pdfx-pdpart { position: relative; aspect-ratio: 4/3.3; border-radius: 16px; overflow: hidden; padding: 40px; display: flex; align-items: center; background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; box-shadow: var(--shadow-product); }
 .pdfx-pdpart__type { display: flex; flex-direction: column; gap: 4px; line-height: 0.94; }
 .pdfx-pdpart__type span { font-family: var(--font-display); font-weight: 700; font-size: 76px; letter-spacing: -1.5px; color: #fff; }
