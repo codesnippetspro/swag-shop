@@ -391,6 +391,8 @@
   .pdfx-medslot { flex-basis: 190px; padding: 3px; }
   .pdfx-medcard { padding: 14px; }
   .pdfx-medcard--on { padding: 13px; }
+  .pdfx-cfg { position: relative; padding-top: 169px; }
+  .pdfx-imgrail { position: absolute; top: 0; left: 0; right: 0; margin-top: 0; }
   .pdfx-acc__body { max-width: none; }
 }
 
