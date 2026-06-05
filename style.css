@@ -421,11 +421,14 @@
 
 @media (max-width: 640px) {
   .cs-storefront--home { padding: 0 !important; }
-  .cs-hero__inner { padding-top: 42px; padding-bottom: 42px; }
-  .cs-hero__title { font-size: 38px; }
-  .cs-hero__sub { font-size: 15px; }
-  .cs-hero__cta { flex-direction: column; }
-  .cs-hero__cta .cs-btn { width: 100%; }
+  .cs-hero__inner { gap: 24px; padding-top: 36px; padding-bottom: 36px; }
+  .cs-hero__title { font-size: clamp(32px, 8.7vw, 36px); line-height: 0.98; margin: 12px 0 16px; }
+  .cs-hero__sub { font-size: 15px; line-height: 1.48; margin-bottom: 22px; }
+  .cs-hero__cta { flex-direction: column; gap: 10px; }
+  .cs-hero__cta .cs-btn { width: 100%; min-height: 50px; }
+  .cs-hero__art { justify-content: center; }
+  .cs-hero__stage { width: min(248px, 72vw); border-radius: 16px; }
+  .cs-hero__stage .cs-meme__block { font-size: clamp(28px, 8vw, 34px); }
   .cs-storefront--home .cs-section__head { gap: 8px; margin-bottom: 22px; }
   .cs-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .cs-dcard__art { border-radius: 7px; padding: 8%; }
@@ -473,6 +476,15 @@
   .newsletter-form__input-button-container { flex-direction: column !important; gap: 10px !important; }
   .newsletter-form__input { flex-basis: auto !important; }
   .newsletter-form .input-field.input-field--base, .newsletter-form .button.button--primary.button--large.button--expand { border-radius: 5px !important; width: 100% !important; }
+}
+
+@media (max-width: 480px) {
+  .cs-hero__inner { padding-top: 32px; padding-bottom: 32px; }
+  .cs-hero__title { font-size: clamp(30px, 8.1vw, 32px); margin-bottom: 14px; }
+  .cs-hero__sub { max-width: 32ch; }
+  .cs-hero__stage { box-sizing: border-box; width: 196px; padding: 22px; }
+  .cs-hero__stage .cs-badge { top: 10px; left: 10px; font-size: 9px; padding: 4px 8px; }
+  .cs-hero__stage .cs-meme__block { font-size: clamp(24px, 7.2vw, 28px); }
 }
 
 @media (max-width: 380px) {
