@@ -251,8 +251,8 @@
 .cs-dcard__name { font-weight: 600; font-size: var(--fw-h4); line-height: 1.25; color: var(--teal-heading); }
 .cs-dcard .cs-btn { margin-top: 2px; align-self: stretch; }
 .cs-meme { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-.cs-meme__stack { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.26em; max-width: 100%; padding: 1.15em 1.4em; transition: transform .25s ease; }
-.cs-meme__block { max-width: 100%; font-family: var(--font-display); font-weight: 700; line-height: 1.0; padding: 0.16em 0.46em; border-radius: 0.24em; white-space: normal; overflow-wrap: anywhere; letter-spacing: -0.01em; font-size: clamp(24px, 2.25vw, 34px); color: var(--teal-heading); text-align: center; }
+.cs-meme__stack { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.26em; max-width: 100%; transition: transform .25s ease; }
+.cs-meme__block { max-width: 100%; font-family: var(--font-display); font-weight: 700; line-height: 1.0; border-radius: 0.24em; white-space: normal; overflow-wrap: anywhere; letter-spacing: -0.01em; font-size: clamp(24px, 2.25vw, 34px); color: var(--teal-heading); text-align: center; }
 .cs-dcard:hover .cs-meme__stack { transform: scale(1.03); }
 
 .pdfx-pdp { padding: 28px 0 0; }
