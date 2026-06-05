@@ -344,11 +344,17 @@
     return words.slice(0, 4).join('<br>');
   }
 
+  function randomItem(items) {
+    if (!items || !items.length) return null;
+    var random = window.crypto && window.crypto.getRandomValues ? window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296 : Math.random();
+    return items[Math.floor(random * items.length)];
+  }
+
   function renderHome(root, state) {
     var designs = state.collections.filter(function (collection) {
       return DESIGN_COLLECTIONS[collection.slug];
     });
-    var hero = designs[0] || null;
+    var hero = randomItem(designs) || null;
     var heroName = hero ? displayCollectionName(hero.slug, hero.name || hero.title) : 'Code Snippets';
     var heroCount = hero ? state.counts[hero.slug] || hero.productsCount || hero.products_count || 0 : 0;
     var heroHref = hero ? '/collections/' + escapeHtml(hero.slug) : '#cs-designs';
