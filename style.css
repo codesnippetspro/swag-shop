@@ -394,6 +394,7 @@
   .cs-wrapper, .cs-storefront--home .cs-section__head, .cs-grid--4 { padding-left: 20px; padding-right: 20px; }
   .cs-hero__inner { grid-template-columns: 1fr; gap: 36px; min-height: 0; padding-top: 56px; padding-bottom: 56px; }
   .cs-hero__title { font-size: 46px; }
+  .cs-hero__stage { box-sizing: border-box; }
   .cs-storefront--home .cs-section__head { margin-bottom: 28px; }
   .cs-grid { gap: 22px; }
   .cs-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -417,6 +418,16 @@
   .newsletter-form__input-button-container { flex-direction: column !important; gap: 10px !important; }
   .newsletter-form__input { flex-basis: auto !important; }
   .newsletter-form .input-field.input-field--base, .newsletter-form .button.button--primary.button--large.button--expand { border-radius: 5px !important; width: 100% !important; }
+}
+
+@media (min-width: 641px) and (max-width: 980px) {
+  .cs-hero__inner { grid-template-columns: minmax(0, 1fr) minmax(260px, 280px); gap: 32px; align-items: center; padding-top: 48px; padding-bottom: 48px; }
+  .cs-hero__title { font-size: clamp(36px, 5.2vw, 40px); }
+  .cs-hero__sub { font-size: 16px; line-height: 1.5; max-width: 420px; }
+  .cs-hero__cta { gap: 10px; }
+  .cs-hero__cta .cs-btn { min-height: 52px; padding-left: 14px; padding-right: 14px; font-size: 15px; }
+  .cs-hero__stage { width: 280px; padding: 26px; }
+  .cs-hero__stage .cs-meme__block { font-size: clamp(30px, 4vw, 38px); }
 }
 
 @media (max-width: 640px) {
