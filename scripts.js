@@ -44,20 +44,7 @@
   var CURRENCY = 'USD';
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
   var IMAGE_CACHE = {};
-  var DESIGN_COLLECTIONS = {
-    'brain-100-focus-0': 'Brain 100% • Focus 0%',
-    'coder': 'Coder',
-    'emoji-code': 'Emoji Code',
-    'error-404': 'Error 404',
-    'im-this-old': "I'm this old",
-    'in-a-relationship': 'In a relationship',
-    'make-it-work': 'Make it work',
-    'my-therapist-says': 'My therapist says',
-    'powered-by-coffee': 'Powered by coffee',
-    'snippers': 'Snippers',
-    'snippet-activated': 'Snippet Activated',
-    'tabs-over-spaces': 'Tabs over spaces'
-  };
+  var RESERVED_COLLECTION_SLUGS = { all: true };
 
   function qs(selector, root) {
     return (root || document).querySelector(selector);
@@ -99,25 +86,26 @@
     return match ? decodeURIComponent(match[1]) : '';
   }
 
-  function designKey(product) {
+  function isVisibleCollection(collection) {
+    return collection && collection.slug && !RESERVED_COLLECTION_SLUGS[collection.slug];
+  }
+
+  function visibleCollections(collections) {
+    return (collections || []).filter(isVisibleCollection);
+  }
+
+  function collectionsBySpecificSlug(collections) {
+    return visibleCollections(collections).slice().sort(function (left, right) {
+      return String(right.slug || '').length - String(left.slug || '').length;
+    });
+  }
+
+  function designKey(product, collections) {
     var slug = (product.slug || '').toLowerCase();
-    var checks = [
-      ['make-it-work', 'make-it-work'],
-      ['tabs-over-spaces', 'tabs-over-spaces'],
-      ['powered-by-coffee', 'powered-by-coffee'],
-      ['powered-by', 'powered-by-coffee'],
-      ['emoji-code', 'emoji-code'],
-      ['snippet-activated', 'snippet-activated'],
-      ['snippers', 'snippers'],
-      ['im-this-old', 'im-this-old'],
-      ['in-a-relationship', 'in-a-relationship'],
-      ['brain-100-focus-0', 'brain-100-focus-0'],
-      ['error-404', 'error-404'],
-      ['coder', 'coder'],
-      ['my-therapist-says', 'my-therapist-says']
-    ];
-    for (var i = 0; i < checks.length; i++) {
-      if (slug.indexOf(checks[i][0]) === 0) return checks[i][1];
+    var matches = collectionsBySpecificSlug(collections);
+    for (var i = 0; i < matches.length; i++) {
+      var collectionSlug = String(matches[i].slug || '').toLowerCase();
+      if (slug === collectionSlug || slug.indexOf(collectionSlug + '-') === 0) return matches[i].slug;
     }
     return slug;
   }
@@ -370,7 +358,7 @@
   }
 
   function displayCollectionName(slug, fallback) {
-    return DESIGN_COLLECTIONS[slug] || fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
+    return fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
   }
 
   function productCountLabel(count) {
@@ -384,9 +372,7 @@
   }
 
   function renderHome(root, state) {
-    var designs = state.collections.filter(function (collection) {
-      return DESIGN_COLLECTIONS[collection.slug];
-    });
+    var designs = visibleCollections(state.collections);
     var hero = randomItem(designs) || null;
     var heroName = hero ? displayCollectionName(hero.slug, hero.name || hero.title) : 'Code Snippets';
     var heroCount = hero ? state.counts[hero.slug] || hero.productsCount || hero.products_count || 0 : 0;
@@ -888,23 +874,39 @@
     });
   }
 
-  function productMatchesDesign(product, slug) {
-    return designKey(product) === slug || (product.slug || '').indexOf(slug + '-') === 0;
+  function productMatchesDesign(product, slug, collections) {
+    return designKey(product, collections) === slug || (product.slug || '').indexOf(slug + '-') === 0;
   }
 
-  function loadCollectionProducts(slug) {
+  function findCollectionSlugForProduct(product, collections) {
+    var inferredSlug = designKey(product, collections);
+    if (inferredSlug && inferredSlug !== (product.slug || '').toLowerCase()) return Promise.resolve(inferredSlug);
+
+    return Promise.all(visibleCollections(collections).map(function (collection) {
+      return fetchJson('/collections/' + encodeURIComponent(collection.slug) + '/products', { size: 100, currency: CURRENCY })
+        .then(function (response) {
+          var match = publicProducts(response.results).some(function (candidate) {
+            return candidate.slug === product.slug || stableParam(candidate.id) === stableParam(product.id);
+          });
+          return match ? collection.slug : null;
+        })
+        .catch(function () { return null; });
+    })).then(function (slugs) {
+      return slugs.find(Boolean) || inferredSlug;
+    });
+  }
+
+  function loadCollectionProducts(slug, collections) {
     return fetchJson('/collections/' + encodeURIComponent(slug) + '/products', { size: 100, currency: CURRENCY })
       .then(function (response) {
         return { products: publicProducts(response.results), source: slug };
       })
       .catch(function () {
-        if (!DESIGN_COLLECTIONS[slug]) throw new Error('Collection products unavailable for ' + slug);
-
         return fetchJson('/collections/all/products', { size: 100, currency: CURRENCY })
           .then(function (response) {
             return {
               products: publicProducts(response.results).filter(function (product) {
-                return productMatchesDesign(product, slug);
+                return productMatchesDesign(product, slug, collections);
               }),
               source: 'all-filtered'
             };
@@ -951,27 +953,33 @@
 
   function redirectProductToCollection() {
     var productSlug = currentProductSlug();
-    return fetchJson('/collections/all/products', { size: 100, currency: CURRENCY }).then(function (response) {
-      var product = publicProducts(response.results).find(function (item) { return item.slug === productSlug; });
+    return Promise.all([
+      fetchJson('/collections', { size: 100 }),
+      fetchJson('/collections/all/products', { size: 100, currency: CURRENCY })
+    ]).then(function (responses) {
+      var collections = responses[0].results || [];
+      var product = publicProducts(responses[1].results).find(function (item) { return item.slug === productSlug; });
       if (!product) throw new Error('Product not found for direct link: ' + productSlug);
-      var params = new URLSearchParams(window.location.search);
-      var variantParam = params.get('v') || params.get('sku') || params.get('variant') || '';
-      var variant = null;
-      if (variantParam) {
-        variant = (product.variants || []).find(function (candidate) {
-          return sameShareSku(candidate.sku, variantParam) || stableParam(candidate.id) === stableParam(variantParam);
-        });
-      }
-      variant = variant || (product.variants || [])[0] || null;
-      var nextParams = new URLSearchParams();
-      if (variant && variant.sku) {
-        nextParams.set('v', shareSku(variant.sku));
-      } else if (variant && variant.id) {
-        nextParams.set('v', stableParam(variant.id));
-      }
-      var quantity = Math.max(1, parseInt(params.get('q') || params.get('qty'), 10) || 1);
-      if (quantity !== 1) nextParams.set('q', quantity);
-      window.location.replace('/collections/' + encodeURIComponent(designKey(product)) + (nextParams.toString() ? '?' + nextParams.toString() : ''));
+      return findCollectionSlugForProduct(product, collections).then(function (collectionSlug) {
+        var params = new URLSearchParams(window.location.search);
+        var variantParam = params.get('v') || params.get('sku') || params.get('variant') || '';
+        var variant = null;
+        if (variantParam) {
+          variant = (product.variants || []).find(function (candidate) {
+            return sameShareSku(candidate.sku, variantParam) || stableParam(candidate.id) === stableParam(variantParam);
+          });
+        }
+        variant = variant || (product.variants || [])[0] || null;
+        var nextParams = new URLSearchParams();
+        if (variant && variant.sku) {
+          nextParams.set('v', shareSku(variant.sku));
+        } else if (variant && variant.id) {
+          nextParams.set('v', stableParam(variant.id));
+        }
+        var quantity = Math.max(1, parseInt(params.get('q') || params.get('qty'), 10) || 1);
+        if (quantity !== 1) nextParams.set('q', quantity);
+        window.location.replace('/collections/' + encodeURIComponent(collectionSlug) + (nextParams.toString() ? '?' + nextParams.toString() : ''));
+      });
     });
   }
 
@@ -1002,18 +1010,17 @@
       var collections = responses[0].results || [];
       var counts = {};
       publicProducts(responses[1].results).forEach(function (product) {
-        var key = designKey(product);
+        var key = designKey(product, collections);
         counts[key] = (counts[key] || 0) + 1;
       });
       return { page: 'home', collections: collections, counts: counts };
-    }) : Promise.all([
-      fetchJson('/collections', { size: 100 }),
-      loadCollectionProducts(slug)
-    ]).then(function (responses) {
-      var collections = responses[0].results || [];
-      var collection = collections.find(function (item) { return item.slug === slug; }) || { name: DESIGN_COLLECTIONS[slug] || 'Code Snippets', slug: slug };
-      var products = responses[1].products;
-      return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products) };
+    }) : fetchJson('/collections', { size: 100 }).then(function (response) {
+      var collections = response.results || [];
+      return loadCollectionProducts(slug, collections).then(function (collectionResponse) {
+        var collection = collections.find(function (item) { return item.slug === slug; }) || { name: 'Code Snippets', slug: slug };
+        var products = collectionResponse.products;
+        return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products) };
+      });
     });
 
     request.then(function (state) {
