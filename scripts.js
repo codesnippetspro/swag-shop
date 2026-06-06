@@ -352,12 +352,6 @@
     return count === 1 ? '1 product' : count + ' products';
   }
 
-  function designCardText(name) {
-    var words = String(name || '').split(/\s+/).filter(Boolean);
-    if (words.length <= 2) return words.join(' ');
-    return words.slice(0, 4).join(' ');
-  }
-
   function randomItem(items) {
     if (!items || !items.length) return null;
     var random = window.crypto && window.crypto.getRandomValues ? window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296 : Math.random();
@@ -376,13 +370,13 @@
       var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
       var name = displayCollectionName(collection.slug, collection.name || collection.title);
       return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
-        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + designCardText(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
+        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
         + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span></div><span class="cs-btn cs-btn--primary cs-btn--small cs-btn--full">View</span>'
         + '</a>';
     }).join('');
 
     root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
-      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">V3 · Configure flow</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '"><div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + designCardText(heroName) + '</span></div></div></div></a></div></section>'
+      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">V3 · Configure flow</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '"><div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div></a></div></section>'
       + '<section class="cs-section cs-home-designs" id="cs-designs"><div class="cs-wrapper"><div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h2 class="cs-h2">Open a design to configure it</h2><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
       + '</section>';
   }
@@ -509,7 +503,7 @@
     root.innerHTML = '<section class="cs-storefront cs-storefront--collection">'
       + '<div class="cs-wrapper">'
       + '<div class="pdfx-pdp__top">'
-      + '<div class="pdfx-pdpart"><span class="pdfx-pdpart__c tl">CODE SNIPPETS</span><span class="pdfx-pdpart__c tr">LIMITED</span><span class="pdfx-pdpart__c bl">' + escapeHtml(state.collection.slug || '') + '</span><span class="pdfx-pdpart__c br">est. 2026</span><div class="pdfx-pdpart__type"><span>' + designCardText(collectionName) + '</span></div></div>'
+      + '<div class="pdfx-pdpart"><span class="pdfx-pdpart__c tl">CODE SNIPPETS</span><span class="pdfx-pdpart__c tr">LIMITED</span><span class="pdfx-pdpart__c bl">' + escapeHtml(state.collection.slug || '') + '</span><span class="pdfx-pdpart__c br">est. 2026</span><div class="pdfx-pdpart__type"><span>' + escapeHtml(collectionName) + '</span></div></div>'
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><div class="pdfx-pdp__blurb">' + collectionDescription + '</div><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(collectionPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
