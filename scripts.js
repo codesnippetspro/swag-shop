@@ -54,7 +54,7 @@
     'make-it-work': 'Make it work',
     'my-therapist-says': 'My therapist says',
     'powered-by-coffee': 'Powered by coffee',
-    'snippet': 'Snippet',
+    'snippers': 'Snippers',
     'snippet-activated': 'Snippet Activated',
     'tabs-over-spaces': 'Tabs over spaces'
   };
@@ -108,7 +108,7 @@
       ['powered-by', 'powered-by-coffee'],
       ['emoji-code', 'emoji-code'],
       ['snippet-activated', 'snippet-activated'],
-      ['snippet', 'snippet'],
+      ['snippers', 'snippers'],
       ['im-this-old', 'im-this-old'],
       ['in-a-relationship', 'in-a-relationship'],
       ['brain-100-focus-0', 'brain-100-focus-0'],
