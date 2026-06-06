@@ -94,6 +94,11 @@
     return match ? decodeURIComponent(match[1]) : 'staff-pick';
   }
 
+  function currentProductSlug() {
+    var match = window.location.pathname.match(/\/products\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
   function designKey(product) {
     var slug = (product.slug || '').toLowerCase();
     var checks = [
@@ -462,9 +467,15 @@
     }).join('') + '</div>';
   }
 
+  function cartIconHtml() {
+    var icon = qs('#fw-section-header a[href$="/cart"] div') || qs('#fw-section-header a[href$="/cart"] img') || qs('a[href$="/cart"] div') || qs('a[href$="/cart"] img');
+    if (!icon) return '<span aria-hidden="true">Cart</span>';
+    return icon.tagName && icon.tagName.toLowerCase() === 'img' ? icon.outerHTML : icon.innerHTML;
+  }
+
   function renderConfigureSection(product, variant, state, configureStep) {
     var stockStatus = variantStockStatus(variant);
-    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
+    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="Add to cart" title="Add to cart"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
   }
 
   function updateConfigureSection(root, state) {
@@ -547,6 +558,7 @@
       var colorButton = event.target.closest('[data-color]');
       var sizeButton = event.target.closest('[data-size]');
       var addButton = event.target.closest('.cs-storefront__add');
+      var cartButton = event.target.closest('.cs-storefront__cart');
       var previewButton = event.target.closest('[data-preview-image]');
       var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       var accordionButton = event.target.closest('.pdfx-acc__head');
@@ -566,7 +578,9 @@
         syncUrl(state.selection, sizeProduct, selectedVariant(sizeProduct, state.selection));
         updateConfigureSection(root, state);
       } else if (addButton) {
-        addSelectedToCart(addButton, state);
+        addSelectedToCart(addButton, state, true);
+      } else if (cartButton) {
+        addSelectedToCart(cartButton, state, false);
       } else if (previewButton) {
         state.selection.previewImageUrl = previewButton.dataset.previewImage;
         updatePreviewImage(root, state.selection.previewImageUrl);
@@ -748,28 +762,70 @@
     });
   }
 
-  function addSelectedToCart(button, state) {
+  function updateNativeCartLink(cartId) {
+    if (!cartId) return;
+    var cartLink = qs('#fw-section-header a[href$="/cart"]') || qs('a[href$="/cart"]');
+    if (cartLink) {
+      cartLink.setAttribute('href', '/cart?cartId=' + encodeURIComponent(cartId) + '&currency=' + encodeURIComponent(CURRENCY));
+    }
+  }
+
+  function addSelectedToCart(button, state, goToCheckout) {
     var product = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
     var variant = selectedVariant(product, state.selection);
     var stockStatus = variantStockStatus(variant);
     if (!variant || !variant.id || !stockStatus.available) return;
     var quantity = Math.max(1, state.selection.quantity || 1);
+    var isIconButton = button.classList.contains('cs-storefront__cart');
+    var originalHtml = button.dataset.originalHtml || button.innerHTML;
+    var originalLabel = button.getAttribute('aria-label') || 'Add to cart';
+    button.dataset.originalHtml = originalHtml;
     button.disabled = true;
-    button.textContent = 'Adding…';
+    if (isIconButton) {
+      button.classList.add('is-loading');
+      button.setAttribute('aria-label', 'Adding to cart');
+      button.setAttribute('title', 'Adding to cart');
+    } else {
+      button.textContent = 'Adding…';
+    }
     var cartId = getCartId();
     var request = cartId ? addCartItem(cartId, variant.id, quantity).catch(function () {
       window.localStorage.removeItem(CART_STORAGE_KEY);
       return createCart(variant.id, quantity);
     }) : createCart(variant.id, quantity);
     request.then(function (cart) {
-      if (cart && cart.id) setCartId(cart.id);
-      button.textContent = 'Added';
-      window.location.href = '/cart/checkout?cartId=' + encodeURIComponent(cart.id) + '&currency=' + encodeURIComponent(CURRENCY);
+      var activeCartId = cart && cart.id || cartId;
+      if (!activeCartId) throw new Error('Cart ID missing after add');
+      setCartId(activeCartId);
+      updateNativeCartLink(activeCartId);
+      if (goToCheckout) {
+        button.textContent = 'Added';
+        window.location.href = '/cart/checkout?cartId=' + encodeURIComponent(activeCartId) + '&currency=' + encodeURIComponent(CURRENCY);
+        return;
+      }
+      button.disabled = false;
+      button.classList.remove('is-loading');
+      button.classList.add('is-added');
+      button.setAttribute('aria-label', 'Added to cart');
+      button.setAttribute('title', 'Added to cart');
+      window.setTimeout(function () {
+        button.classList.remove('is-added');
+        button.setAttribute('aria-label', originalLabel);
+        button.setAttribute('title', originalLabel);
+        button.innerHTML = originalHtml;
+      }, 1800);
     }).catch(function (error) {
       console.error('[swag-shop] add to cart failed', error);
       button.disabled = false;
-      button.textContent = 'Checkout now';
-      window.location.href = '/products/' + encodeURIComponent(product.slug);
+      if (isIconButton) {
+        button.classList.remove('is-loading');
+        button.setAttribute('aria-label', originalLabel);
+        button.setAttribute('title', originalLabel);
+        button.innerHTML = originalHtml;
+      } else {
+        button.textContent = 'Checkout now';
+        window.location.href = '/products/' + encodeURIComponent(product.slug);
+      }
     });
   }
 
@@ -807,10 +863,19 @@
     return /\/collections\/[^/?#]+/.test(window.location.pathname);
   }
 
+  function isProductPage() {
+    return /\/products\/[^/?#]+/.test(window.location.pathname);
+  }
+
+  function isManagedStorefrontPage() {
+    return isHomePage() || isCollectionPage() || isProductPage();
+  }
+
   function ensureMountRoot() {
+    if (!isManagedStorefrontPage()) return null;
     var sourceRoot = qs('root');
     var pageMain = (sourceRoot && sourceRoot.closest('.page__main')) || qs('.page__main');
-    if (!pageMain && !isCollectionPage()) return null;
+    if (!pageMain) return null;
     pageMain = pageMain || qs('main') || document.body;
 
     if (!STOREFRONT_TOKEN && sourceRoot) {
@@ -838,6 +903,32 @@
       + '</section>';
   }
 
+  function redirectProductToCollection() {
+    var productSlug = currentProductSlug();
+    return fetchJson('/collections/all/products', { size: 100, currency: CURRENCY }).then(function (response) {
+      var product = publicProducts(response.results).find(function (item) { return item.slug === productSlug; });
+      if (!product) throw new Error('Product not found for direct link: ' + productSlug);
+      var params = new URLSearchParams(window.location.search);
+      var variantParam = params.get('v') || params.get('sku') || params.get('variant') || '';
+      var variant = null;
+      if (variantParam) {
+        variant = (product.variants || []).find(function (candidate) {
+          return sameShareSku(candidate.sku, variantParam) || stableParam(candidate.id) === stableParam(variantParam);
+        });
+      }
+      variant = variant || (product.variants || [])[0] || null;
+      var nextParams = new URLSearchParams();
+      if (variant && variant.sku) {
+        nextParams.set('v', shareSku(variant.sku));
+      } else if (variant && variant.id) {
+        nextParams.set('v', stableParam(variant.id));
+      }
+      var quantity = Math.max(1, parseInt(params.get('q') || params.get('qty'), 10) || 1);
+      if (quantity !== 1) nextParams.set('q', quantity);
+      window.location.replace('/collections/' + encodeURIComponent(designKey(product)) + (nextParams.toString() ? '?' + nextParams.toString() : ''));
+    });
+  }
+
   function init() {
     var mount = ensureMountRoot();
     if (!mount || mount.dataset.csStorefrontMounted) return;
@@ -846,6 +937,14 @@
     if (!STOREFRONT_TOKEN) {
       console.warn('[swag-shop] Missing Storefront API token. Add window.CS_SWAG_CONFIG.storefrontToken or root[data-storefront-token].');
       renderTokenMissing(mount);
+      return;
+    }
+    if (isProductPage()) {
+      redirectProductToCollection().catch(function (error) {
+        console.error('[swag-shop] product redirect failed', error);
+        mount.classList.remove('cs-storefront-mounted');
+        mount.removeAttribute('data-cs-storefront-mounted');
+      });
       return;
     }
     renderSkeleton(mount);
