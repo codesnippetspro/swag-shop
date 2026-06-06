@@ -907,26 +907,19 @@
   function ensureMountRoot() {
     if (!isManagedStorefrontPage()) return null;
     var sourceRoot = qs('root');
-    var pageMain = (sourceRoot && sourceRoot.closest('.page__main')) || qs('.page__main');
-    if (!pageMain) return null;
-    pageMain = pageMain || qs('main') || document.body;
+    if (!sourceRoot) return null;
 
-    if (!STOREFRONT_TOKEN && sourceRoot) {
+    var pageMain = sourceRoot.closest('.page__main') || qs('.page__main');
+    if (!pageMain) return null;
+
+    if (!STOREFRONT_TOKEN) {
       STOREFRONT_TOKEN = decodeStorefrontToken(sourceRoot.getAttribute('data-storefront-token') || '');
     }
 
-    if (sourceRoot) {
-      sourceRoot.remove();
-    }
+    sourceRoot.remove();
+    if (!STOREFRONT_TOKEN) return null;
 
     return pageMain;
-  }
-
-  function renderTokenMissing(root) {
-    root.innerHTML = '<section class="cs-storefront cs-storefront--error">'
-      + '<strong>Storefront token missing.</strong>'
-      + '<span>Add window.CS_SWAG_CONFIG.storefrontToken or root[data-storefront-token] in Fourthwall custom code.</span>'
-      + '</section>';
   }
 
   function renderSkeleton(root) {
@@ -967,11 +960,6 @@
     if (!mount || mount.dataset.csStorefrontMounted) return;
     mount.dataset.csStorefrontMounted = 'true';
     mount.classList.add('cs-storefront-mounted');
-    if (!STOREFRONT_TOKEN) {
-      console.warn('[swag-shop] Missing Storefront API token. Add window.CS_SWAG_CONFIG.storefrontToken or root[data-storefront-token].');
-      renderTokenMissing(mount);
-      return;
-    }
     if (isProductPage()) {
       redirectProductToCollection().catch(function (error) {
         console.error('[swag-shop] product redirect failed', error);
