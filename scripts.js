@@ -465,6 +465,26 @@
     }).join('') + '</div>';
   }
 
+  function renderConfigureSection(product, variant, state, configureStep) {
+    var stockStatus = variantStockStatus(variant);
+    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
+  }
+
+  function updateConfigureSection(root, state) {
+    var product = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
+    if (!product) return;
+    var variant = selectedVariant(product, state.selection);
+    var configureStep = state.products.length > 1 ? '2' : '1';
+    var section = root.querySelector('.cs-storefront__configure');
+    if (!section) {
+      render(root, state);
+      return;
+    }
+    var template = document.createElement('template');
+    template.innerHTML = renderConfigureSection(product, variant, state, configureStep);
+    section.replaceWith(template.content.firstElementChild);
+  }
+
   function render(root, state) {
     if (state.page === 'home') {
       renderHome(root, state);
@@ -478,7 +498,6 @@
     }
     var variant = selectedVariant(product, state.selection);
     var collectionPrice = lowestCollectionPrice(state.products);
-    var stockStatus = variantStockStatus(variant);
     var collectionName = displayCollectionName(state.collection.slug, state.collection.name || state.collection.title);
     var hasProductPicker = state.products.length > 1;
     var pickerHtml = hasProductPicker ? '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>' : '';
@@ -491,7 +510,7 @@
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><p class="pdfx-pdp__blurb">' + escapeHtml(heroBlurb) + '</p><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(collectionPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
-      + '<section class="cs-section"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>'
+      + renderConfigureSection(product, variant, state, configureStep)
       + '</section>';
   }
 
@@ -543,12 +562,12 @@
         var colorProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         updateSelectionFromVariant(state, colorProduct, variantForOption(colorProduct, state.selection, 'color', colorButton.dataset.color));
         syncUrl(state.selection, colorProduct, selectedVariant(colorProduct, state.selection));
-        render(root, state);
+        updateConfigureSection(root, state);
       } else if (sizeButton) {
         var sizeProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         updateSelectionFromVariant(state, sizeProduct, variantForOption(sizeProduct, state.selection, 'size', sizeButton.dataset.size));
         syncUrl(state.selection, sizeProduct, selectedVariant(sizeProduct, state.selection));
-        render(root, state);
+        updateConfigureSection(root, state);
       } else if (addButton) {
         addSelectedToCart(addButton, state);
       } else if (previewButton) {
