@@ -450,7 +450,7 @@
   .cs-dcard__art { border-radius: 7px; padding: 8%; }
   .cs-dcard__count { left: 8px; right: auto; bottom: 8px; max-width: calc(100% - 16px); font-size: 10px; }
   .cs-dcard__info { padding-top: 10px; }
-  .cs-dcard__name { font-size: 15px; }
+  .cs-dcard__name { font-size: 15px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
   .cs-dcard .cs-btn { display: inline-flex; }
   .cs-section__desc, .pdfx-pdp__blurb { font-size: 15px; }
   .pdfx-pdpart { aspect-ratio: 1 / 1; padding: 24px; border-radius: 12px; }
