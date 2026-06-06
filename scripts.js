@@ -351,11 +351,22 @@
 
   function isAllCollectionsPage() {
     var segments = window.location.pathname.split('/').filter(Boolean);
-    return segments.length === 2 && segments[0] === 'collections' && segments[1] === 'all';
+    if (segments.length === 2) {
+      return segments[0] === 'collections' && segments[1] === 'all';
+    }
+    return segments.length === 3 && /^[a-z]{2}(?:-[a-z0-9]{2,4})?$/i.test(segments[0]) && segments[1] === 'collections' && segments[2] === 'all';
   }
 
   function redirectAllCollectionsToDesigns() {
-    window.location.replace('/#cs-designs');
+    window.location.replace(window.location.origin + '/#cs-designs');
+  }
+
+  function scrollToHashTarget() {
+    if (window.location.hash !== '#cs-designs') return;
+    window.requestAnimationFrame(function () {
+      var target = qs('#cs-designs');
+      if (target) target.scrollIntoView({ block: 'start' });
+    });
   }
 
   function displayCollectionName(slug, fallback) {
@@ -1012,6 +1023,7 @@
         syncUrl(state.selection, initialProduct, selectedVariant(initialProduct, state.selection));
       }
       render(mount, state);
+      scrollToHashTarget();
       if (state.page !== 'home') bind(mount, state);
       document.documentElement.classList.add('cs-storefront-ready');
       window.dispatchEvent(new CustomEvent('cs:storefront-ready', { detail: state }));
