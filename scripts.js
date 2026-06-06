@@ -468,9 +468,9 @@
   }
 
   function cartIconHtml() {
-    var icon = qs('#fw-section-header a[href$="/cart"] div') || qs('#fw-section-header a[href$="/cart"] img') || qs('a[href$="/cart"] div') || qs('a[href$="/cart"] img');
+    var icon = qs('#fw-section-header a[href$="/cart"] svg') || qs('#fw-section-header a[href$="/cart"] img') || qs('a[href$="/cart"] svg') || qs('a[href$="/cart"] img');
     if (!icon) return '<span aria-hidden="true">Cart</span>';
-    return icon.tagName && icon.tagName.toLowerCase() === 'img' ? icon.outerHTML : icon.innerHTML;
+    return icon.outerHTML;
   }
 
   function renderConfigureSection(product, variant, state, configureStep) {
@@ -762,12 +762,52 @@
     });
   }
 
+  function addNativeCartItem(variantId, quantity) {
+    return fetch('/cart/add.js' + window.location.search, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ items: [{ id: variantId, quantity: quantity }] })
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error('Fourthwall native cart ' + response.status);
+      }
+      return response.json();
+    });
+  }
+
+  function updateNativeCartState(cart) {
+    var itemCount = cart && cart.item_count || cart && cart.cart && cart.cart.item_count;
+    var cartLink = qs('#fw-section-header a[href$="/cart"]') || qs('a[href$="/cart"]') || qs('#fw-section-header a[href*="cart"]');
+    if (cartLink) cartLink.setAttribute('href', '/cart');
+    document.querySelectorAll('[data-cart-widget="quantity"]').forEach(function (node) {
+      node.textContent = itemCount || 0;
+    });
+    document.querySelectorAll('[data-cart-widget="widget"]').forEach(function (node) {
+      node.classList.toggle('empty', !itemCount);
+    });
+    window.currentCart = cart && cart.cart ? cart.cart : cart;
+    window.dispatchEvent(new CustomEvent('cart:updated', { detail: window.currentCart }));
+  }
+
   function updateNativeCartLink(cartId) {
     if (!cartId) return;
     var cartLink = qs('#fw-section-header a[href$="/cart"]') || qs('a[href$="/cart"]');
     if (cartLink) {
       cartLink.setAttribute('href', '/cart?cartId=' + encodeURIComponent(cartId) + '&currency=' + encodeURIComponent(CURRENCY));
     }
+  }
+
+  function goToNativeCheckout() {
+    var form = document.createElement('form');
+    var input = document.createElement('input');
+    form.method = 'post';
+    form.action = '/cart';
+    input.type = 'hidden';
+    input.name = 'checkout';
+    input.value = 'checkout';
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
   }
 
   function addSelectedToCart(button, state, goToCheckout) {
@@ -788,19 +828,12 @@
     } else {
       button.textContent = 'Adding…';
     }
-    var cartId = getCartId();
-    var request = cartId ? addCartItem(cartId, variant.id, quantity).catch(function () {
-      window.localStorage.removeItem(CART_STORAGE_KEY);
-      return createCart(variant.id, quantity);
-    }) : createCart(variant.id, quantity);
+    var request = addNativeCartItem(variant.id, quantity);
     request.then(function (cart) {
-      var activeCartId = cart && cart.id || cartId;
-      if (!activeCartId) throw new Error('Cart ID missing after add');
-      setCartId(activeCartId);
-      updateNativeCartLink(activeCartId);
+      updateNativeCartState(cart);
       if (goToCheckout) {
         button.textContent = 'Added';
-        window.location.href = '/cart/checkout?cartId=' + encodeURIComponent(activeCartId) + '&currency=' + encodeURIComponent(CURRENCY);
+        goToNativeCheckout();
         return;
       }
       button.disabled = false;

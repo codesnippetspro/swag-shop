@@ -485,9 +485,10 @@
   .pdfx-imgthumb { width: 75px; height: 75px; min-width: 75px; padding: 5px; border-radius: 8px; }
   .cs-storefront__swatches, .cs-storefront__sizes { gap: 9px; }
   .cs-storefront__size { min-width: 50px; height: 42px; font-size: 14px; }
-  .cs-buyrow { display: grid; grid-template-columns: 72px minmax(0, 1fr) 56px; gap: 12px; align-items: center; }
+  .cs-buyrow { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; }
   .cs-buyrow__price { margin: 0; text-align: right; font-size: 24px; }
-  .cs-storefront__add { grid-column: 1 / -1; width: 100%; }
+  .cs-storefront__cart { grid-column: 1; width: 56px; height: 56px; justify-self: start; }
+  .cs-storefront__add { grid-column: 2; width: 100%; }
   .cs-ship { margin-top: 16px; }
   .pdfx-url button { align-self: flex-start; }
   .pdfx-acc { margin-top: 24px; }
