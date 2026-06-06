@@ -349,6 +349,15 @@
     return segments.length === 1 && /^[a-z]{2}(?:-[a-z0-9]{2,4})?$/i.test(segments[0]);
   }
 
+  function isAllCollectionsPage() {
+    var segments = window.location.pathname.split('/').filter(Boolean);
+    return segments.length === 2 && segments[0] === 'collections' && segments[1] === 'all';
+  }
+
+  function redirectAllCollectionsToDesigns() {
+    window.location.replace('/#cs-designs');
+  }
+
   function displayCollectionName(slug, fallback) {
     return DESIGN_COLLECTIONS[slug] || fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
   }
@@ -956,6 +965,11 @@
   }
 
   function init() {
+    if (isAllCollectionsPage()) {
+      redirectAllCollectionsToDesigns();
+      return;
+    }
+
     var mount = ensureMountRoot();
     if (!mount || mount.dataset.csStorefrontMounted) return;
     mount.dataset.csStorefrontMounted = 'true';
