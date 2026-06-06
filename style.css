@@ -498,7 +498,7 @@
   .cs-hero__inner { padding-top: 32px; padding-bottom: 32px; }
   .cs-hero__title { font-size: clamp(30px, 8.1vw, 32px); margin-bottom: 14px; }
   .cs-hero__sub { max-width: 32ch; }
-  .cs-hero__stage { box-sizing: border-box; width: 196px; padding: 22px; }
+  .cs-hero__stage { box-sizing: border-box; width: 100%; padding: 22px; }
   .cs-hero__stage .cs-badge { top: 10px; left: 10px; font-size: 9px; padding: 4px 8px; }
   .cs-hero__stage .cs-meme__block { font-size: clamp(24px, 7.2vw, 28px); }
 }
