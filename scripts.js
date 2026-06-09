@@ -37,11 +37,31 @@
     }
   }
 
+  function isSupportedCurrency(value) {
+    return ['USD', 'EUR', 'GBP', 'CAD', 'AUD'].indexOf(String(value || '').toUpperCase()) !== -1;
+  }
+
+  function requestedCurrency() {
+    var params = new URLSearchParams(window.location.search || '');
+    var explicit = (params.get('currency') || '').toUpperCase();
+    if (isSupportedCurrency(explicit)) return explicit;
+
+    var localeMatch = window.location.pathname.match(/^\/en-([a-z]{3})(?:\/|$)/i);
+    var localeCurrency = localeMatch ? localeMatch[1].toUpperCase() : '';
+    if (isSupportedCurrency(localeCurrency)) return localeCurrency;
+
+    var cookieMatch = document.cookie.match(/(?:^|;\s*)currency=([^;]+)/i);
+    var cookieCurrency = cookieMatch ? decodeURIComponent(cookieMatch[1]).toUpperCase() : '';
+    if (isSupportedCurrency(cookieCurrency)) return cookieCurrency;
+
+    return 'USD';
+  }
+
   var STOREFRONT_TOKEN = decodeStorefrontToken(
     (window.CS_SWAG_CONFIG && window.CS_SWAG_CONFIG.storefrontToken) || ''
   );
   var API_BASE = 'https://storefront-api.fourthwall.com/v1';
-  var CURRENCY = 'USD';
+  var CURRENCY = requestedCurrency();
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
   var IMAGE_CACHE = {};
   var RESERVED_COLLECTION_SLUGS = { all: true };
@@ -387,7 +407,7 @@
     }).join('');
 
     root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
-      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">V3 · Configure flow</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '"><div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div></a></div></section>'
+      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">We make it work</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '"><div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div></a></div></section>'
       + '<section class="cs-section cs-home-designs" id="cs-designs"><div class="cs-wrapper"><div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h2 class="cs-h2">Open a design to configure it</h2><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
       + '</section>';
   }
@@ -481,7 +501,19 @@
 
   function renderConfigureSection(product, variant, state, configureStep) {
     var stockStatus = variantStockStatus(variant);
-    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span><div class="pdfx-stephead"><h2 class="cs-h2">Make it yours.</h2></div><div class="pdfx-cfgrid">' + renderProductPreview(product, variant, state.selection) + '<div class="pdfx-cfg">' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="Add to cart" title="Add to cart"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
+    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="Add to cart" title="Add to cart"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
+  }
+
+  function preserveRailScroll(root) {
+    var positions = [];
+    root.querySelectorAll('.pdfx-medrail, .pdfx-imgrail').forEach(function (rail) {
+      positions.push({ rail: rail, left: rail.scrollLeft });
+    });
+    return function () {
+      positions.forEach(function (item) {
+        if (item.rail && item.rail.isConnected) item.rail.scrollLeft = item.left;
+      });
+    };
   }
 
   function updateConfigureSection(root, state) {
@@ -494,9 +526,12 @@
       render(root, state);
       return;
     }
+    var restoreRailScroll = preserveRailScroll(root);
     var template = document.createElement('template');
     template.innerHTML = renderConfigureSection(product, variant, state, configureStep);
     section.replaceWith(template.content.firstElementChild);
+    restoreRailScroll();
+    window.requestAnimationFrame(restoreRailScroll);
   }
 
   function render(root, state) {
@@ -699,6 +734,8 @@
 
   function syncUrl(selection, product, variant) {
     var params = new URLSearchParams();
+    var existingCurrency = (new URLSearchParams(window.location.search || '').get('currency') || '').toUpperCase();
+    if (isSupportedCurrency(existingCurrency)) params.set('currency', existingCurrency);
     if (variant && variant.sku) {
       params.set('v', shareSku(variant.sku));
     } else {
