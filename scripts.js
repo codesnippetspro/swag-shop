@@ -499,6 +499,62 @@
     return icon.outerHTML;
   }
 
+  function cartWidgetHtml() {
+    var widget = qs('header [data-cart-widget="widget"]');
+    if (widget) return widget.outerHTML;
+    return '<span data-cart-widget="quantity" class="cart-widget__items">0</span>' + cartIconHtml();
+  }
+
+  function proHeaderLink(label, href, className) {
+    return '<a class="cs-pro-header__link ' + (className || '') + '" href="' + href + '">' + label + '</a>';
+  }
+
+  function initProHeader() {
+    var header = qs('header.header');
+    if (!header || header.dataset.csProHeader === 'true') return;
+
+    var logo = qs('.header__logo img', header);
+    var logoHtml = logo ? logo.outerHTML : '<span class="cs-pro-header__fallback-logo">Code Snippets</span>';
+    var cartHtml = cartWidgetHtml();
+
+    header.dataset.csProHeader = 'true';
+    header.classList.add('cs-pro-header');
+    header.innerHTML = '<div class="cs-pro-header__wrap">'
+      + '<div class="cs-pro-header__bar">'
+      + '<a class="cs-pro-header__logo" href="https://codesnippets.pro/" aria-label="Code Snippets Pro Homepage">' + logoHtml + '</a>'
+      + '<nav class="cs-pro-header__nav" aria-label="Menu">'
+      + '<ul class="cs-pro-header__list">'
+      + '<li>' + proHeaderLink('Home', 'https://codesnippets.pro/') + '</li>'
+      + '<li>' + proHeaderLink('Pricing', 'https://codesnippets.pro/pricing/') + '</li>'
+      + '<li class="cs-pro-header__item cs-pro-header__item--has-submenu">'
+      + '<a class="cs-pro-header__link cs-pro-header__link--resources" href="https://codesnippets.pro/#" aria-haspopup="true" aria-expanded="false">Resources<span class="cs-pro-header__caret" aria-hidden="true">⌄</span></a>'
+      + '<ul class="cs-pro-header__submenu" aria-label="Resources submenu">'
+      + '<li><a href="https://codesnippets.pro/docs/">Documentation</a></li>'
+      + '<li><a href="https://codesnippets.pro/partners/">Partners</a></li>'
+      + '<li><a href="https://codesnippets.pro/support/">Support</a></li>'
+      + '<li><a href="https://codesnippets.pro/blog/">Blog</a></li>'
+      + '</ul>'
+      + '</li>'
+      + '<li>' + proHeaderLink('Snippet Search', 'https://codesnippets.cloud/search') + '</li>'
+      + '<li>' + proHeaderLink('Login', 'https://codesnippets.pro/login/') + '</li>'
+      + '</ul>'
+      + '</nav>'
+      + '<div class="cs-pro-header__actions">'
+      + '<a class="cs-pro-header__cta" href="https://codesnippets.pro/pricing/">Get Started</a>'
+      + '<a class="cs-pro-header__cart" href="/cart" aria-label="Cart">' + cartHtml + '</a>'
+      + '</div>'
+      + '<button class="cs-pro-header__toggle" type="button" aria-label="Toggle menu" aria-expanded="false" data-cs-header-toggle><span></span><span></span><span></span></button>'
+      + '</div>'
+      + '</div>';
+
+    header.addEventListener('click', function (event) {
+      var toggle = event.target.closest('[data-cs-header-toggle]');
+      if (!toggle) return;
+      var isOpen = header.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  }
+
   function renderConfigureSection(product, variant, state, configureStep) {
     var stockStatus = variantStockStatus(variant);
     return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="Add to cart" title="Add to cart"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
@@ -556,7 +612,7 @@
       + '<div class="cs-wrapper">'
       + '<div class="pdfx-pdp__top">'
       + '<div class="pdfx-pdpart"><span class="pdfx-pdpart__c tl">CODE SNIPPETS</span><span class="pdfx-pdpart__c tr">LIMITED</span><span class="pdfx-pdpart__c bl">' + escapeHtml(state.collection.slug || '') + '</span><span class="pdfx-pdpart__c br">est. 2026</span><div class="pdfx-pdpart__type"><span>' + escapeHtml(collectionName) + '</span></div></div>'
-      + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__rate">4.0 · 97 reviews</div><div class="pdfx-pdp__blurb">' + collectionDescription + '</div><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(collectionPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
+      + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__blurb">' + collectionDescription + '</div><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(collectionPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
       + renderConfigureSection(product, variant, state, configureStep)
@@ -1021,6 +1077,8 @@
   }
 
   function init() {
+    initProHeader();
+
     if (isAllCollectionsPage()) {
       redirectAllCollectionsToDesigns();
       return;
