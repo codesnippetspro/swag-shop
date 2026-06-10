@@ -453,7 +453,7 @@
     var image = selection && selection.previewImageUrl || firstImage(product, variant);
     preloadImage(image);
     return '<div class="pdfx-cfgprev">'
-      + (image ? '<img class="cs-product-image" src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '" width="720" height="960" loading="eager" decoding="sync">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
+      + (image ? '<button type="button" class="pdfx-cfgprev__open" data-lightbox-open="' + escapeHtml(image) + '" aria-label="Open product image gallery"><img class="cs-product-image" src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '" width="720" height="960" loading="eager" decoding="sync"></button>' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
       + '<span class="pdfx-cfgprev__tag">' + escapeHtml(productType(product)) + '</span>'
       + '</div>';
   }
@@ -665,12 +665,74 @@
     if (!url) return;
     preloadImage(url);
     var preview = root.querySelector('.pdfx-cfgprev img');
+    var opener = root.querySelector('.pdfx-cfgprev__open');
     if (preview && preview.getAttribute('src') !== url) {
       preview.src = url;
     }
+    if (opener) opener.dataset.lightboxOpen = url;
     root.querySelectorAll('.pdfx-imgthumb').forEach(function (button) {
       button.classList.toggle('is-active', button.dataset.previewImage === url);
     });
+  }
+
+  function activeProductForState(state) {
+    return state.products.find(function (item) {
+      return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId);
+    }) || state.products[0];
+  }
+
+  function setPageScrollLocked(locked) {
+    document.documentElement.classList.toggle('cs-lightbox-open', locked);
+    document.body.classList.toggle('cs-lightbox-open', locked);
+  }
+
+  function closeProductLightbox() {
+    var lightbox = qs('.cs-lightbox');
+    if (lightbox) lightbox.remove();
+    setPageScrollLocked(false);
+  }
+
+  function renderProductLightbox(images, index) {
+    if (!images.length) return '';
+    index = Math.max(0, Math.min(index || 0, images.length - 1));
+    var image = images[index];
+    var thumbs = images.map(function (url, thumbIndex) {
+      return '<button type="button" class="cs-lightbox__thumb' + (thumbIndex === index ? ' is-active' : '') + '" data-lightbox-index="' + thumbIndex + '" aria-label="Show image ' + escapeHtml(thumbIndex + 1) + '"><img src="' + escapeHtml(url) + '" alt="" loading="eager" decoding="sync"></button>';
+    }).join('');
+    return '<div class="cs-lightbox" role="dialog" aria-modal="true" aria-label="Product image gallery" data-lightbox-current="' + index + '">'
+      + '<button type="button" class="cs-lightbox__backdrop" data-lightbox-close aria-label="Close image gallery"></button>'
+      + '<div class="cs-lightbox__panel">'
+      + '<button type="button" class="cs-lightbox__close" data-lightbox-close aria-label="Close image gallery">×</button>'
+      + '<button type="button" class="cs-lightbox__nav cs-lightbox__nav--prev" data-lightbox-prev aria-label="Previous image">‹</button>'
+      + '<button type="button" class="cs-lightbox__nav cs-lightbox__nav--next" data-lightbox-next aria-label="Next image">›</button>'
+      + '<button type="button" class="cs-lightbox__zoom" data-lightbox-zoom aria-label="Zoom image">Zoom</button>'
+      + '<div class="cs-lightbox__stage"><img class="cs-lightbox__image" src="' + escapeHtml(image) + '" alt="Product image ' + escapeHtml(index + 1) + '" draggable="false"></div>'
+      + '<div class="cs-lightbox__meta">' + escapeHtml(index + 1) + ' / ' + escapeHtml(images.length) + '</div>'
+      + '<div class="cs-lightbox__thumbs">' + thumbs + '</div>'
+      + '</div></div>';
+  }
+
+  function updateLightbox(lightbox, images, index) {
+    var zoomed = lightbox.classList.contains('is-zoomed');
+    var template = document.createElement('template');
+    template.innerHTML = renderProductLightbox(images, index);
+    var next = template.content.firstElementChild;
+    if (zoomed && next) next.classList.add('is-zoomed');
+    lightbox.replaceWith(next);
+  }
+
+  function openProductLightbox(state, startUrl) {
+    var product = activeProductForState(state);
+    if (!product) return;
+    var variant = selectedVariant(product, state.selection);
+    var images = productImagesForVariant(product, variant);
+    if (!images.length) return;
+    var index = Math.max(0, images.indexOf(startUrl || state.selection.previewImageUrl || firstImage(product, variant)));
+    closeProductLightbox();
+    var template = document.createElement('template');
+    template.innerHTML = renderProductLightbox(images, index);
+    document.body.appendChild(template.content.firstElementChild);
+    setPageScrollLocked(true);
   }
 
   function variantForOption(product, selection, optionName, optionValue) {
@@ -695,6 +757,7 @@
       var addButton = event.target.closest('.cs-storefront__add');
       var cartButton = event.target.closest('.cs-storefront__cart');
       var previewButton = event.target.closest('[data-preview-image]');
+      var lightboxOpen = event.target.closest('[data-lightbox-open]');
       var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       var accordionButton = event.target.closest('.pdfx-acc__head');
       if (productButton) {
@@ -719,6 +782,8 @@
       } else if (previewButton) {
         state.selection.previewImageUrl = previewButton.dataset.previewImage;
         updatePreviewImage(root, state.selection.previewImageUrl);
+      } else if (lightboxOpen) {
+        openProductLightbox(state, lightboxOpen.dataset.lightboxOpen);
       } else if (copyTarget) {
         shareOrCopyLink(copyTarget);
       } else if (accordionButton) {
@@ -735,6 +800,37 @@
       if (!copyTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
       event.preventDefault();
       shareOrCopyLink(copyTarget);
+    });
+    document.addEventListener('click', function (event) {
+      var lightbox = event.target.closest('.cs-lightbox');
+      if (!lightbox) return;
+      var product = activeProductForState(state);
+      var variant = product && selectedVariant(product, state.selection);
+      var images = product ? productImagesForVariant(product, variant) : [];
+      var current = parseInt(lightbox.dataset.lightboxCurrent, 10) || 0;
+      if (event.target.closest('[data-lightbox-close]')) {
+        closeProductLightbox();
+      } else if (event.target.closest('[data-lightbox-zoom]') || event.target.closest('.cs-lightbox__image')) {
+        lightbox.classList.toggle('is-zoomed');
+      } else if (event.target.closest('[data-lightbox-prev]') && images.length) {
+        updateLightbox(lightbox, images, (current - 1 + images.length) % images.length);
+      } else if (event.target.closest('[data-lightbox-next]') && images.length) {
+        updateLightbox(lightbox, images, (current + 1) % images.length);
+      } else {
+        var thumb = event.target.closest('[data-lightbox-index]');
+        if (thumb && images.length) updateLightbox(lightbox, images, parseInt(thumb.dataset.lightboxIndex, 10) || 0);
+      }
+    });
+    document.addEventListener('keydown', function (event) {
+      var lightbox = qs('.cs-lightbox');
+      if (!lightbox) return;
+      var product = activeProductForState(state);
+      var variant = product && selectedVariant(product, state.selection);
+      var images = product ? productImagesForVariant(product, variant) : [];
+      var current = parseInt(lightbox.dataset.lightboxCurrent, 10) || 0;
+      if (event.key === 'Escape') closeProductLightbox();
+      if (event.key === 'ArrowLeft' && images.length) updateLightbox(lightbox, images, (current - 1 + images.length) % images.length);
+      if (event.key === 'ArrowRight' && images.length) updateLightbox(lightbox, images, (current + 1) % images.length);
     });
     root.addEventListener('change', function (event) {
       if (event.target.matches('[data-qty-select]')) {
