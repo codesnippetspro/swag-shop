@@ -558,7 +558,7 @@
     header.classList.add('cs-pro-header');
     header.innerHTML = '<div class="cs-pro-header__wrap">'
       + '<div class="cs-pro-header__bar">'
-      + '<a class="cs-pro-header__logo" href="https://codesnippets.pro/" aria-label="Code Snippets Pro Homepage">' + logoHtml + '</a>'
+      + '<a class="cs-pro-header__logo" href="/" aria-label="Swag Shop Homepage">' + logoHtml + '</a>'
       + '<nav class="cs-pro-header__nav" aria-label="Menu">'
       + '<ul class="cs-pro-header__list">'
       + '<li>' + proHeaderLink('Home', 'https://codesnippets.pro/') + '</li>'
