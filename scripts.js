@@ -65,6 +65,22 @@
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
   var IMAGE_CACHE = {};
   var RESERVED_COLLECTION_SLUGS = { all: true };
+  var COLLECTION_COVER_IMAGES = {
+    'brain-100-focus-0': 'brain-100-focus-0.webp',
+    'coder': 'coder.webp',
+    'emoji-code': 'emoji-code.webp',
+    'error-404': 'error-404.webp',
+    'im-this-old': 'im-this-old.webp',
+    'in-a-relationship': 'in-a-relationship.webp',
+    'make-it-work': 'make-it-work-1.webp',
+    'make-it-work-1': 'make-it-work-1.webp',
+    'make-it-work-2': 'make-it-work-2.webp',
+    'my-therapist-says': 'my-therapist-says.webp',
+    'powered-by-coffee': 'powered-by-coffee.webp',
+    'snippers': 'snippers.webp',
+    'snippet-activated': 'snippet-activated.webp',
+    'tabs-over-spaces': 'tabs-over-spaces.webp'
+  };
 
   function qs(selector, root) {
     return (root || document).querySelector(selector);
@@ -170,6 +186,26 @@
 
   function imageUrl(image) {
     return image ? (image.transformedUrl || image.url || '') : '';
+  }
+
+  function assetUrl(path) {
+    return 'https://codesnippetspro.github.io/swag-shop/' + path.replace(/^\//, '');
+  }
+
+  function collectionCoverImage(collection) {
+    var direct = imageUrl(collection && (collection.image || collection.thumbnail || collection.coverImage));
+    if (direct) return direct;
+    var file = collection && COLLECTION_COVER_IMAGES[collection.slug];
+    return file ? assetUrl('assets/collections/' + file) : '';
+  }
+
+  function collectionArtHtml(collection, name, count, className, loading) {
+    var cover = collectionCoverImage(collection);
+    if (cover) {
+      preloadImage(cover);
+      return '<div class="' + className + ' ' + className + '--image"><img class="cs-collection-image" src="' + escapeHtml(cover) + '" alt="' + escapeHtml(name) + '" width="700" height="700" loading="' + (loading || 'lazy') + '" decoding="async"><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>';
+    }
+    return '<div class="' + className + '"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>';
   }
 
   function preloadImage(url) {
@@ -397,17 +433,18 @@
     var heroName = hero ? displayCollectionName(hero.slug, hero.name || hero.title) : 'Code Snippets';
     var heroCount = hero ? state.counts[hero.slug] || hero.productsCount || hero.products_count || 0 : 0;
     var heroHref = hero ? '/collections/' + escapeHtml(hero.slug) : '#cs-designs';
+    var heroArt = hero ? collectionArtHtml(hero, heroName, heroCount, 'cs-hero__stage', 'eager') : '<div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div>';
     var cards = designs.map(function (collection) {
       var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
       var name = displayCollectionName(collection.slug, collection.name || collection.title);
       return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
-        + '<div class="cs-dcard__art"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>'
+        + collectionArtHtml(collection, name, count, 'cs-dcard__art')
         + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span></div><span class="cs-btn cs-btn--primary cs-btn--small cs-btn--full">View</span>'
         + '</a>';
     }).join('');
 
     root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
-      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">We make it work</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '"><div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div></a></div></section>'
+      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">We make it work</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '">' + heroArt + '</a></div></section>'
       + '<section class="cs-section cs-home-designs" id="cs-designs"><div class="cs-wrapper"><div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h2 class="cs-h2">Open a design to configure it</h2><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
       + '</section>';
   }
@@ -416,7 +453,7 @@
     var image = selection && selection.previewImageUrl || firstImage(product, variant);
     preloadImage(image);
     return '<div class="pdfx-cfgprev">'
-      + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '" loading="eager" decoding="sync">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
+      + (image ? '<img class="cs-product-image" src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '" width="720" height="960" loading="eager" decoding="sync">' : '<div class="pdfx-shape pdfx-shape--lg"><span class="pdfx-shape__label">' + escapeHtml(productType(product)) + '</span></div>')
       + '<span class="pdfx-cfgprev__tag">' + escapeHtml(productType(product)) + '</span>'
       + '</div>';
   }
@@ -427,7 +464,7 @@
     var active = selection && selection.previewImageUrl || firstImage(product, variant);
     return '<div class="pdfx-imgrail" aria-label="Product images">' + images.map(function (image, index) {
       var current = image === active ? ' is-active' : '';
-      return '<button type="button" class="pdfx-imgthumb' + current + '" data-preview-image="' + escapeHtml(image) + '" aria-label="Show product image ' + escapeHtml(index + 1) + '"><img src="' + escapeHtml(image) + '" alt="" width="145" height="145" loading="eager" decoding="sync"></button>';
+      return '<button type="button" class="pdfx-imgthumb' + current + '" data-preview-image="' + escapeHtml(image) + '" aria-label="Show product image ' + escapeHtml(index + 1) + '"><img class="cs-product-image" src="' + escapeHtml(image) + '" alt="" width="720" height="960" loading="eager" decoding="sync"></button>';
     }).join('') + '</div>';
   }
 
@@ -487,7 +524,7 @@
       var variant = (item.variants || [])[0] || null;
       var active = item.slug === activeProduct.slug;
       return '<div class="pdfx-medslot' + (active ? ' pdfx-medslot--on' : '') + '"><button type="button" class="pdfx-medcard' + (active ? ' pdfx-medcard--on' : '') + '" data-product="' + escapeHtml(item.slug) + '">'
-        + '<div class="pdfx-medcard__stage">' + (active ? '<span class="pdfx-medcard__sel">Selected</span>' : '') + (firstImage(item, variant) ? '<img src="' + escapeHtml(firstImage(item, variant)) + '" alt="' + escapeHtml(item.name) + '">' : '') + '</div>'
+        + '<div class="pdfx-medcard__stage">' + (active ? '<span class="pdfx-medcard__sel">Selected</span>' : '') + (firstImage(item, variant) ? '<img class="cs-product-image" src="' + escapeHtml(firstImage(item, variant)) + '" alt="' + escapeHtml(item.name) + '" width="720" height="960" loading="lazy" decoding="async">' : '') + '</div>'
         + '<span class="pdfx-medcard__name">' + escapeHtml(productType(item)) + '</span><span class="pdfx-medcard__meta"><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b><span>' + escapeHtml(uniqueColors(item).length ? uniqueColors(item).length + ' colors' : 'one size') + '</span></span>'
         + '</button></div>';
     }).join('') + '</div>';
@@ -608,10 +645,11 @@
     var pickerHtml = hasProductPicker ? '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>' : '';
     var configureStep = hasProductPicker ? '2' : '1';
     var collectionDescription = sanitizeProductHtml(state.collection.description || '');
+    var collectionArt = collectionArtHtml(state.collection, collectionName, state.products.length, 'pdfx-pdpart', 'eager');
     root.innerHTML = '<section class="cs-storefront cs-storefront--collection">'
       + '<div class="cs-wrapper">'
       + '<div class="pdfx-pdp__top">'
-      + '<div class="pdfx-pdpart"><span class="pdfx-pdpart__c tl">CODE SNIPPETS</span><span class="pdfx-pdpart__c tr">LIMITED</span><span class="pdfx-pdpart__c bl">' + escapeHtml(state.collection.slug || '') + '</span><span class="pdfx-pdpart__c br">est. 2026</span><div class="pdfx-pdpart__type"><span>' + escapeHtml(collectionName) + '</span></div></div>'
+      + collectionArt
       + '<div class="pdfx-pdp__info"><span class="pdfx-eyebrowpill">Collection · ' + escapeHtml(productCountLabel(state.products.length)) + '</span><h1 class="cs-h1">' + escapeHtml(collectionName) + '</h1><div class="pdfx-pdp__blurb">' + collectionDescription + '</div><div class="pdfx-pdp__facts"><div class="pdfx-pdp__fact"><span class="lab">From</span><b>' + escapeHtml(money(collectionPrice)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Available on</span><b>' + escapeHtml(productCountLabel(state.products.length)) + '</b></div><div class="pdfx-pdp__fact"><span class="lab">Ships in</span><b>3 to 5 days</b></div></div></div>'
       + '</div></div>'
       + pickerHtml
