@@ -444,7 +444,7 @@
     }).join('');
 
     root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
-      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">We make it work</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--ghostlight cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '">' + heroArt + '</a></div></section>'
+      + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">We make it work</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--secondary cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '">' + heroArt + '</a></div></section>'
       + '<section class="cs-section cs-home-designs" id="cs-designs"><div class="cs-wrapper"><div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h2 class="cs-h2">Open a design to configure it</h2><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
       + '</section>';
   }
@@ -692,14 +692,15 @@
     setPageScrollLocked(false);
   }
 
-  function renderProductLightbox(images, index) {
+  function renderProductLightbox(images, index, background) {
     if (!images.length) return '';
     index = Math.max(0, Math.min(index || 0, images.length - 1));
+    background = background || '#F5F0E8';
     var image = images[index];
     var thumbs = images.map(function (url, thumbIndex) {
       return '<button type="button" class="cs-lightbox__thumb' + (thumbIndex === index ? ' is-active' : '') + '" data-lightbox-index="' + thumbIndex + '" aria-label="Show image ' + escapeHtml(thumbIndex + 1) + '"><img src="' + escapeHtml(url) + '" alt="" loading="eager" decoding="sync"></button>';
     }).join('');
-    return '<div class="cs-lightbox" role="dialog" aria-modal="true" aria-label="Product image gallery" data-lightbox-current="' + index + '">'
+    return '<div class="cs-lightbox" role="dialog" aria-modal="true" aria-label="Product image gallery" data-lightbox-current="' + index + '" style="--cs-lightbox-bg:' + escapeHtml(background) + '">'
       + '<button type="button" class="cs-lightbox__backdrop" data-lightbox-close aria-label="Close image gallery"></button>'
       + '<div class="cs-lightbox__panel">'
       + '<button type="button" class="cs-lightbox__close" data-lightbox-close aria-label="Close image gallery">×</button>'
@@ -714,8 +715,9 @@
 
   function updateLightbox(lightbox, images, index) {
     var zoomed = lightbox.classList.contains('is-zoomed');
+    var background = lightbox.style.getPropertyValue('--cs-lightbox-bg') || '#F5F0E8';
     var template = document.createElement('template');
-    template.innerHTML = renderProductLightbox(images, index);
+    template.innerHTML = renderProductLightbox(images, index, background);
     var next = template.content.firstElementChild;
     if (zoomed && next) next.classList.add('is-zoomed');
     lightbox.replaceWith(next);
@@ -728,9 +730,11 @@
     var images = productImagesForVariant(product, variant);
     if (!images.length) return;
     var index = Math.max(0, images.indexOf(startUrl || state.selection.previewImageUrl || firstImage(product, variant)));
+    var backgroundNode = qs('.pdfx-medcard--on .pdfx-medcard__stage') || qs('.pdfx-cfgprev') || qs('.pdfx-imgthumb.is-active');
+    var background = backgroundNode ? window.getComputedStyle(backgroundNode).backgroundColor : '#F5F0E8';
     closeProductLightbox();
     var template = document.createElement('template');
-    template.innerHTML = renderProductLightbox(images, index);
+    template.innerHTML = renderProductLightbox(images, index, background);
     document.body.appendChild(template.content.firstElementChild);
     setPageScrollLocked(true);
   }
