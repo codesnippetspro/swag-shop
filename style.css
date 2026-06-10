@@ -638,8 +638,8 @@
 .cs-hero__sub { font-size: 18px; line-height: 1.55; color: rgba(255,255,255,0.78); max-width: 470px; margin: 0 0 28px; }
 .cs-hero__cta { display: flex; gap: 14px; flex-wrap: wrap; }
 .cs-hero__art { display: flex; align-items: center; justify-content: stretch; color: inherit; text-decoration: none; min-width: 0; }
-.cs-hero__stage { position: relative; width: 100%; max-width: none; aspect-ratio: 1 / 1; background: #fff; border-radius: 20px; display: flex; align-items: center; justify-content: center; padding: 6%; box-shadow: var(--shadow-product); }
-.cs-hero__stage .cs-meme__block { font-size: clamp(32px, 3.6vw, 44px); }
+.cs-hero__stage { position: relative; width: 100%; max-width: none; aspect-ratio: 1 / 1; background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 40px; overflow: hidden; box-shadow: var(--shadow-product); }
+.cs-hero__stage .cs-meme__block { font-size: clamp(32px, 3.6vw, 44px); color: #fff; }
 .cs-home-designs { background: #fff; }
 .cs-storefront--home .cs-section__head { padding: 0 52px; display: flex; flex-direction: column; gap: 10px; margin: 0 auto 40px; max-width: var(--container-max-width); }
 .cs-storefront--home .cs-home-designs .cs-section__head, .cs-storefront--home .cs-home-designs .cs-grid--4 { padding-left: 0; padding-right: 0; }
@@ -649,10 +649,10 @@
 .cs-dcard { display: flex; flex-direction: column; min-width: 0; cursor: pointer; color: var(--color-on-background); text-decoration: none; }
 .cs-dcard__art { position: relative; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 10%; background: var(--tile-sand); }
 .cs-dcard__art--image { padding: 10%; }
-.cs-hero__stage--image,
+.cs-hero__stage--image { padding: 40px; background-color: var(--teal-deep); }
 .pdfx-pdpart--image { padding: 0; background: #fff; }
 .cs-dcard__art--image .cs-collection-image { object-fit: contain; }
-.cs-hero__stage--image .cs-collection-image,
+.cs-hero__stage--image .cs-collection-image { object-fit: contain; }
 .pdfx-pdpart--image .cs-collection-image { object-fit: cover; }
 .cs-collection-image { display: block; width: 100%; height: 100%; object-fit: cover; }
 .cs-dcard:nth-child(2n) .cs-dcard__art { background: var(--tile-mint); }
@@ -706,14 +706,14 @@
 .pdfx-medcard__meta { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; flex-wrap: nowrap; }
 .pdfx-medcard__meta b { font-weight: 700; font-size: 15px; color: var(--color-on-background); }
 .pdfx-medcard__meta span { font-family: var(--font-mono); font-size: 12px; color: var(--text-mono-muted); white-space: nowrap; }
-.pdfx-cfgrid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 52px; align-items: stretch; margin-top: 24px; }
+.pdfx-cfgrid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 52px; align-items: center; margin-top: 24px; }
 .pdfx-cfgleft { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
 .pdfx-cfgleft .pdfx-steppill { align-self: flex-start; }
 .pdfx-cfgprev { position: relative; aspect-ratio: 3/4; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: var(--tile-sand); overflow: hidden; }
 .pdfx-cfgprev__open { width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background: transparent; cursor: zoom-in; display: flex; align-items: center; justify-content: center; }
 .pdfx-cfgprev img { width: 100%; height: 100%; object-fit: contain; }
 .pdfx-cfgprev__tag { position: absolute; bottom: 14px; right: 14px; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; padding: 5px 11px; border: 1px solid var(--border-mid); border-radius: 999px; background: rgba(255,255,255,0.65); color: var(--text-muted); }
-.pdfx-cfg { margin-top: 0; min-height: 100%; display: flex; flex-direction: column; }
+.pdfx-cfg { margin-top: 0; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
 .pdfx-cfg__title { margin: 0 0 24px; color: var(--teal-heading); font-family: var(--font-display); font-size: clamp(30px, 4vw, 44px); font-weight: 600; line-height: 1.02; letter-spacing: -0.02em; }
 .cs-field { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
 .cs-storefront__option-group > span { font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
@@ -881,7 +881,7 @@ body.cs-lightbox-open { overflow: hidden !important; overscroll-behavior: contai
   .cs-hero__cta { flex-direction: column; gap: 10px; }
   .cs-hero__cta .cs-btn { width: 100%; min-height: 50px; }
   .cs-hero__art { justify-content: center; }
-  .cs-hero__stage { width: min(248px, 72vw); border-radius: 16px; }
+  .cs-hero__stage { width: min(248px, 72vw); border-radius: 16px; padding: 24px; }
   .cs-hero__stage .cs-meme__block { font-size: clamp(28px, 8vw, 34px); }
   .cs-storefront--home .cs-section__head { gap: 8px; margin-bottom: 22px; }
   .cs-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
