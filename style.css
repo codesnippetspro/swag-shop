@@ -676,7 +676,7 @@
 .pdfx-pdpart__c.bl { bottom: 22px; left: 26px; }
 .pdfx-pdpart__c.br { bottom: 22px; right: 26px; }
 .pdfx-pdp__info { display: flex; flex-direction: column; }
-.pdfx-pdp__info .cs-h1 { margin-top: 12px; }
+.pdfx-pdp__info .cs-h1 { margin: 12px 0 1.5rem; }
 .pdfx-eyebrowpill { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; background: var(--tile-blush); color: var(--color-primary); font-weight: 700; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 15px; border-radius: 999px; }
 .pdfx-eyebrowpill::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--color-primary); }
 .pdfx-pdp__blurb { font-size: 17px; line-height: 1.55; color: var(--color-on-background); margin: 0; max-width: 500px; }
