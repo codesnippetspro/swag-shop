@@ -302,7 +302,7 @@
 .cs-pro-header__submenu a {
   display: block !important;
   color: #2F3131 !important;
-  font-size: 13px !important;
+  font-size: 18px !important;
   font-weight: 400 !important;
   line-height: 1.45 !important;
   padding: 12px 14px !important;
@@ -331,7 +331,7 @@
   min-height: 44px !important;
   padding: 10px 24px !important;
   border-radius: 5px !important;
-  background: #F47920 !important;
+  background: var(--color-primary) !important;
   color: #fff !important;
   font-size: 18px !important;
   font-weight: 600 !important;
@@ -389,7 +389,7 @@
   height: 17px !important;
   padding: 0 4px !important;
   border-radius: 999px !important;
-  background: #F47920 !important;
+  background: var(--color-primary) !important;
   color: #fff !important;
   font-size: 11px !important;
   font-weight: 600 !important;
@@ -1061,7 +1061,7 @@ body.body.cart .main--cart .cart-item__image {
   margin: 0 !important;
   overflow: hidden !important;
   border: 1px solid var(--border-light) !important;
-  border-radius: 8px !important;
+  border-radius: 0 !important;
   background: var(--surface-card) !important;
 }
 
