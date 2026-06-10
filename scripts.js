@@ -524,7 +524,7 @@
       var variant = (item.variants || [])[0] || null;
       var active = item.slug === activeProduct.slug;
       return '<div class="pdfx-medslot' + (active ? ' pdfx-medslot--on' : '') + '"><button type="button" class="pdfx-medcard' + (active ? ' pdfx-medcard--on' : '') + '" data-product="' + escapeHtml(item.slug) + '">'
-        + '<div class="pdfx-medcard__stage">' + (active ? '<span class="pdfx-medcard__sel">Selected</span>' : '') + (firstImage(item, variant) ? '<img class="cs-product-image" src="' + escapeHtml(firstImage(item, variant)) + '" alt="' + escapeHtml(item.name) + '" width="720" height="960" loading="lazy" decoding="async">' : '') + '</div>'
+        + '<div class="pdfx-medcard__stage">' + (active ? '<span class="pdfx-medcard__sel">Selected</span>' : '') + (firstImage(item, variant) ? '<img class="cs-product-image" src="' + escapeHtml(firstImage(item, variant)) + '" alt="' + escapeHtml(item.name) + '" width="720" height="960" loading="eager" decoding="async">' : '') + '</div>'
         + '<span class="pdfx-medcard__name">' + escapeHtml(productType(item)) + '</span><span class="pdfx-medcard__meta"><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b><span>' + escapeHtml(uniqueColors(item).length ? uniqueColors(item).length + ' colors' : 'one size') + '</span></span>'
         + '</button></div>';
     }).join('') + '</div>';
