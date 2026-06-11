@@ -130,6 +130,26 @@
     return (collections || []).filter(isVisibleCollection);
   }
 
+  function collectionIdentity(collection) {
+    return String(collection && (collection.name || collection.title || collection.slug) || '').trim().toLowerCase();
+  }
+
+  function collectionHasCover(collection) {
+    return !!collectionCoverImage(collection);
+  }
+
+  function dedupeCollectionsByName(collections) {
+    var selected = {};
+    visibleCollections(collections).forEach(function (collection) {
+      var key = collectionIdentity(collection);
+      var current = selected[key];
+      if (!current || (collectionHasCover(collection) && !collectionHasCover(current)) || String(collection.slug || '').length > String(current.slug || '').length) {
+        selected[key] = collection;
+      }
+    });
+    return Object.keys(selected).map(function (key) { return selected[key]; });
+  }
+
   function collectionsBySpecificSlug(collections) {
     return visibleCollections(collections).slice().sort(function (left, right) {
       return String(right.slug || '').length - String(left.slug || '').length;
@@ -1202,6 +1222,27 @@
       });
   }
 
+  function loadHomeCollectionCounts(collections) {
+    var candidates = dedupeCollectionsByName(collections);
+    var counts = {};
+    return Promise.all(candidates.map(function (collection) {
+      return fetchJson('/collections/' + encodeURIComponent(collection.slug) + '/products', { size: 100, currency: CURRENCY })
+        .then(function (response) {
+          counts[collection.slug] = publicProducts(response.results).length;
+          return collection;
+        })
+        .catch(function () {
+          counts[collection.slug] = 0;
+          return collection;
+        });
+    })).then(function (checked) {
+      return {
+        collections: checked.filter(function (collection) { return (counts[collection.slug] || 0) > 0; }),
+        counts: counts
+      };
+    });
+  }
+
   function isCollectionPage() {
     return /\/collections\/[^/?#]+/.test(window.location.pathname);
   }
@@ -1293,17 +1334,10 @@
     }
     renderSkeleton(mount);
     var slug = currentCollectionSlug();
-    var request = isHomePage() ? Promise.all([
-      fetchJson('/collections', { size: 100 }),
-      fetchJson('/collections/all/products', { size: 100, currency: CURRENCY })
-    ]).then(function (responses) {
-      var collections = responses[0].results || [];
-      var counts = {};
-      publicProducts(responses[1].results).forEach(function (product) {
-        var key = designKey(product, collections);
-        counts[key] = (counts[key] || 0) + 1;
+    var request = isHomePage() ? fetchJson('/collections', { size: 100 }).then(function (response) {
+      return loadHomeCollectionCounts(response.results || []).then(function (home) {
+        return { page: 'home', collections: home.collections, counts: home.counts };
       });
-      return { page: 'home', collections: collections, counts: counts };
     }) : fetchJson('/collections', { size: 100 }).then(function (response) {
       var collections = response.results || [];
       return Promise.all([
