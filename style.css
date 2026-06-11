@@ -760,7 +760,7 @@
 .cs-dcard:hover .cs-meme__stack { transform: scale(1.03); }
 
 .pdfx-pdp__top { display: grid; grid-template-columns: 1.04fr 0.96fr; gap: 56px; align-items: center; padding: var(--cs-section-padding-block) 0; }
-.pdfx-pdpart { position: relative; aspect-ratio: 1/1; border-radius: 16px; overflow: hidden; padding: 40px; display: flex; align-items: center; background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; box-shadow: var(--shadow-product); }
+.pdfx-pdpart { position: relative; aspect-ratio: 1/1; border-radius: 16px; overflow: hidden; padding: 40px; display: flex; align-items: center; background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; }
 .pdfx-pdpart.cs-arttile--sand { background-color: var(--tile-sand); }
 .pdfx-pdpart.cs-arttile--mint { background-color: var(--tile-mint); }
 .pdfx-pdpart.cs-arttile--blush { background-color: var(--tile-blush); }
