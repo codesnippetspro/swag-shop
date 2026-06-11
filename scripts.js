@@ -198,7 +198,7 @@
 
   function collectionCoverAsset(collection) {
     var id = collection && collection.id ? String(collection.id).trim() : '';
-    return id ? assetUrl('assets/collections/' + encodeURIComponent(id) + '.webp') : '';
+    return id ? assetUrl('assets/collections/' + encodeURIComponent(id.replace(/^col_/, '')) + '.webp') : '';
   }
 
   function collectionCoverImage(collection) {
