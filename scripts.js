@@ -354,7 +354,7 @@
 
   function renderStockNote(status) {
     if (!status.available) return '<p class="cs-ship cs-ship--soldout">Sold out</p>';
-    return '<p class="cs-ship">' + escapeHtml(status.label) + ' · ships in 3 to 5 days · free over $50</p>';
+    return '<p class="cs-ship">' + escapeHtml(status.label) + ' · ships in 3 to 5 days</p>';
   }
 
   function renderProductOptions(product, selection) {
