@@ -65,22 +65,6 @@
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
   var IMAGE_CACHE = {};
   var RESERVED_COLLECTION_SLUGS = { all: true };
-  var COLLECTION_COVER_IMAGES = {
-    'brain-100-focus-0': 'brain-100-focus-0.webp',
-    'coder': 'coder.webp',
-    'emoji-code': 'emoji-code.webp',
-    'error-404': 'error-404.webp',
-    'im-this-old': 'im-this-old.webp',
-    'in-a-relationship': 'in-a-relationship.webp',
-    'make-it-work': 'make-it-work-1.webp',
-    'make-it-work-1': 'make-it-work-1.webp',
-    'make-it-work-2': 'make-it-work-2.webp',
-    'my-therapist-says': 'my-therapist-says.webp',
-    'powered-by-coffee': 'powered-by-coffee.webp',
-    'the-snippers': 'snippers.webp',
-    'snippet-activated': 'snippet-activated.webp',
-    'tabs-over-spaces': 'tabs-over-spaces.webp'
-  };
 
   function qs(selector, root) {
     return (root || document).querySelector(selector);
@@ -212,11 +196,14 @@
     return 'https://codesnippetspro.github.io/swag-shop/' + path.replace(/^\//, '');
   }
 
+  function collectionCoverAsset(collection) {
+    var id = collection && collection.id ? String(collection.id).trim() : '';
+    return id ? assetUrl('assets/collections/' + encodeURIComponent(id) + '.webp') : '';
+  }
+
   function collectionCoverImage(collection) {
     var direct = imageUrl(collection && (collection.image || collection.thumbnail || collection.coverImage));
-    if (direct) return direct;
-    var file = collection && COLLECTION_COVER_IMAGES[collection.slug];
-    return file ? assetUrl('assets/collections/' + file) : '';
+    return direct || collectionCoverAsset(collection);
   }
 
   function collectionArtHtml(collection, name, count, className, loading) {
