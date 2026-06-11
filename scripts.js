@@ -65,9 +65,6 @@
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
   var IMAGE_CACHE = {};
   var RESERVED_COLLECTION_SLUGS = { all: true };
-  var COLLECTION_NAME_OVERRIDES = {
-    'snippers': 'The Snippers'
-  };
   var COLLECTION_COVER_IMAGES = {
     'brain-100-focus-0': 'brain-100-focus-0.webp',
     'coder': 'coder.webp',
@@ -80,7 +77,7 @@
     'make-it-work-2': 'make-it-work-2.webp',
     'my-therapist-says': 'my-therapist-says.webp',
     'powered-by-coffee': 'powered-by-coffee.webp',
-    'snippers': 'snippers.webp',
+    'the-snippers': 'snippers.webp',
     'snippet-activated': 'snippet-activated.webp',
     'tabs-over-spaces': 'tabs-over-spaces.webp'
   };
@@ -417,7 +414,7 @@
   }
 
   function displayCollectionName(slug, fallback) {
-    return COLLECTION_NAME_OVERRIDES[slug] || fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
+    return fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
   }
 
   function productCountLabel(count) {
@@ -1309,8 +1306,13 @@
       return { page: 'home', collections: collections, counts: counts };
     }) : fetchJson('/collections', { size: 100 }).then(function (response) {
       var collections = response.results || [];
-      return loadCollectionProducts(slug, collections).then(function (collectionResponse) {
-        var collection = collections.find(function (item) { return item.slug === slug; }) || { name: 'Code Snippets', slug: slug };
+      return Promise.all([
+        loadCollectionProducts(slug, collections),
+        fetchJson('/collections/' + encodeURIComponent(slug), {}).catch(function () { return null; })
+      ]).then(function (responses) {
+        var collectionResponse = responses[0];
+        var collectionDetail = responses[1];
+        var collection = collectionDetail || collections.find(function (item) { return item.slug === slug; }) || { name: 'Code Snippets', slug: slug };
         var products = collectionResponse.products;
         return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products) };
       });
