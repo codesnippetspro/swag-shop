@@ -1,5 +1,95 @@
 @import url('https://cdn.jsdelivr.net/npm/css.gg/icons/css/share.css');
 
+/* ============================================
+   Fourthwall button overrides, site-wide
+   Mirrors the theme button API while applying Code Snippets styling.
+   ============================================ */
+
+.button {
+  --btn-height: 48px;
+  --btn-pad-x: 16px;
+  display: inline-flex !important;
+  box-sizing: border-box !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: var(--btn-height) !important;
+  padding: 0 var(--btn-pad-x) !important;
+  border: 2px solid transparent !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-family: var(--font-display, 'Outfit', system-ui, sans-serif) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  transition: opacity 150ms, border-color 150ms, background-color 150ms, color 150ms !important;
+}
+
+.button--primary {
+  background-color: var(--color-primary, #D46F4D) !important;
+  color: #fff !important;
+  border-width: 0 !important;
+  border-style: solid !important;
+  border-color: var(--color-primary, #D46F4D) !important;
+  border-radius: 8px !important;
+  min-height: var(--btn-height) !important;
+  padding: 0 var(--btn-pad-x) !important;
+  font-family: var(--font-display, 'Outfit', system-ui, sans-serif) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.button--primary:hover {
+  opacity: 0.8 !important;
+  color: #fff !important;
+}
+
+.button--secondary {
+  background-color: transparent !important;
+  color: var(--color-primary, #D46F4D) !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: currentColor !important;
+  border-radius: 8px !important;
+  min-height: var(--btn-height) !important;
+  padding: 0 var(--btn-pad-x) !important;
+  font-family: var(--font-display, 'Outfit', system-ui, sans-serif) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+}
+
+.button--secondary:hover {
+  opacity: 0.6 !important;
+  color: var(--color-primary, #D46F4D) !important;
+}
+
+.button--small {
+  --btn-height: 40px;
+  --btn-pad-x: 12px;
+}
+
+.button--large {
+  --btn-height: 56px;
+  --btn-pad-x: 20px;
+}
+
+.button--expand {
+  display: flex !important;
+  width: 100% !important;
+}
+
+@media (max-width: 640px) {
+  .button--expand {
+    width: 100% !important;
+  }
+}
+
 .tile__image .image__badges {
   top: 10px;
   left: 10px;
@@ -1222,41 +1312,6 @@ body.body.cart .main--cart .cart-totals__amount {
 body.body.cart .main--cart .cart-footer__continue { grid-column: 2 !important; grid-row: 2 !important; margin: 0 !important; text-align: right !important; width: auto !important; }
 body.body.cart .main--cart .cart-footer__checkout { grid-column: 3 !important; grid-row: 2 !important; margin: 0 !important; width: auto !important; }
 
-body.body.cart .main--cart .button.button--secondary.button--large.button--expand {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: auto !important;
-  min-width: 168px !important;
-  min-height: 52px !important;
-  padding: 0 26px !important;
-  border: 2px solid currentColor !important;
-  border-radius: 8px !important;
-  background: transparent !important;
-  color: var(--color-primary) !important;
-  font-family: var(--font-display) !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  line-height: 1 !important;
-  text-decoration: none !important;
-}
-
-body.body.cart .main--cart .button.button--primary.button--large.button--expand {
-  width: auto !important;
-  min-width: 168px !important;
-  min-height: 52px !important;
-  padding: 0 26px !important;
-  border: 0 !important;
-  border-radius: 8px !important;
-  background: var(--color-primary) !important;
-  color: #fff !important;
-  font-family: var(--font-display) !important;
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
-}
-
 body.body.cart .main--cart .cart-product-recommendations {
   max-width: 1040px !important;
   margin: 0 auto !important;
@@ -1319,5 +1374,4 @@ body.body.cart .main--cart .cart-product-recommendations__title {
   body.body.cart .main--cart .cart-footer__checkout { grid-column: 1 !important; width: 100% !important; }
   body.body.cart .main--cart .cart-footer__continue { grid-row: 3 !important; text-align: center !important; }
   body.body.cart .main--cart .cart-footer__checkout { grid-row: 2 !important; }
-  body.body.cart .main--cart .button.button--primary.button--large.button--expand { width: 100% !important; }
 }
