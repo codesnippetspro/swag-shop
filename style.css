@@ -736,7 +736,9 @@
 .cs-qty__chev { position: absolute; right: 10px; top: 40%; transform: translateY(-54%); pointer-events: none; font-size: 16px; line-height: 1; color: var(--text-muted); }
 .cs-storefront__add { margin: 0; min-height: 56px; border-radius: 8px; }
 .cs-storefront__add:disabled, .cs-storefront__cart:disabled { opacity: 0.55; cursor: not-allowed; }
-.cs-btn--carticon { width: 56px; min-width: 56px; height: 56px; padding: 0; border-radius: 8px; border: 1.5px solid var(--border-mid); background: #fff; color: var(--color-on-background); }
+.cs-btn--carticon { position: relative; width: 56px; min-width: 56px; height: 56px; padding: 0; border-radius: 8px; border: 1.5px solid var(--border-mid); background: #fff; color: var(--color-on-background); }
+.cs-btn--carticon::before { content: "+"; position: absolute; margin-top: 0.2rem; font-size: 0.8rem; }
+.cs-btn--carticon.has-cart-item::before { content: "✓"; }
 .cs-btn--carticon:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .cs-btn--carticon img, .cs-btn--carticon svg { display: block; width: 22px; height: 22px; object-fit: contain; }
 .cs-btn--carticon.is-added { border-color: var(--color-primary); background: rgba(244, 121, 32, 0.08); }

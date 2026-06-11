@@ -601,7 +601,9 @@
 
   function renderConfigureSection(product, variant, state, configureStep) {
     var stockStatus = variantStockStatus(variant);
-    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="Add to cart" title="Add to cart"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
+    var cartClass = variantInCart(state, variant && variant.id) ? ' has-cart-item' : '';
+    var cartLabel = cartClass ? 'Added to cart' : 'Add to cart';
+    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart' + cartClass + '" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="' + cartLabel + '" title="' + cartLabel + '"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
   }
 
   function preserveRailScroll(root) {
@@ -1090,6 +1092,26 @@
     window.dispatchEvent(new CustomEvent('cart:updated', { detail: window.currentCart }));
   }
 
+  function nativeCartVariantIds(cart) {
+    var ids = {};
+    ((cart && (cart.items || cart.cart && cart.cart.items)) || []).forEach(function (item) {
+      var id = item && (item.variant_id || item.variantId || item.id || item.offerVariantId);
+      if (id) ids[String(id)] = true;
+    });
+    return ids;
+  }
+
+  function loadNativeCart() {
+    return fetch('/cart.js', { headers: { 'Accept': 'application/json' } }).then(function (response) {
+      if (!response.ok) throw new Error('Fourthwall native cart ' + response.status);
+      return response.json();
+    });
+  }
+
+  function variantInCart(state, variantId) {
+    return !!(variantId && state && state.cartVariantIds && state.cartVariantIds[String(variantId)]);
+  }
+
   function updateNativeCartLink(cartId) {
     if (!cartId) return;
     var cartLink = qs('#fw-section-header a[href$="/cart"]') || qs('a[href$="/cart"]');
@@ -1132,6 +1154,9 @@
     var request = addNativeCartItem(variant.id, quantity);
     request.then(function (cart) {
       updateNativeCartState(cart);
+      state.cartVariantIds = state.cartVariantIds || {};
+      state.cartVariantIds[String(variant.id)] = true;
+      button.classList.add('has-cart-item');
       if (goToCheckout) {
         button.textContent = 'Added';
         goToNativeCheckout();
@@ -1144,8 +1169,8 @@
       button.setAttribute('title', 'Added to cart');
       window.setTimeout(function () {
         button.classList.remove('is-added');
-        button.setAttribute('aria-label', originalLabel);
-        button.setAttribute('title', originalLabel);
+        button.setAttribute('aria-label', 'Added to cart');
+        button.setAttribute('title', 'Added to cart');
         button.innerHTML = originalHtml;
       }, 1800);
     }).catch(function (error) {
@@ -1329,13 +1354,15 @@
       var collections = response.results || [];
       return Promise.all([
         loadCollectionProducts(slug, collections),
-        fetchJson('/collections/' + encodeURIComponent(slug), {}).catch(function () { return null; })
+        fetchJson('/collections/' + encodeURIComponent(slug), {}).catch(function () { return null; }),
+        loadNativeCart().catch(function () { return null; })
       ]).then(function (responses) {
         var collectionResponse = responses[0];
         var collectionDetail = responses[1];
+        var cart = responses[2];
         var collection = collectionDetail || collections.find(function (item) { return item.slug === slug; }) || { name: 'Code Snippets', slug: slug };
         var products = collectionResponse.products;
-        return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products) };
+        return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products), cartVariantIds: nativeCartVariantIds(cart) };
       });
     });
 
