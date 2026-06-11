@@ -1316,19 +1316,15 @@ body.body.cart .main--cart .cart-totals__amount {
 body.body.cart .main--cart .cart-footer__continue { grid-column: 2 !important; grid-row: 2 !important; margin: 0 !important; text-align: right !important; width: auto !important; }
 body.body.cart .main--cart .cart-footer__checkout { grid-column: 3 !important; grid-row: 2 !important; margin: 0 !important; width: auto !important; }
 
-body.body.cart .main--cart cart-product-recommendations {
-  display: block !important;
-  width: 100% !important;
-  max-width: 1040px !important;
-  margin: 0 auto !important;
-  box-sizing: border-box !important;
+body.body.cart .main--cart #fw-section-cart-product-recommendations,
+body.body.cart .main--cart cart-product-recommendations,
+body.body.cart .main--cart .cart-product-recommendations {
   background: var(--bg-section) !important;
 }
 
 body.body.cart .main--cart .cart-product-recommendations {
-  max-width: none !important;
-  width: 100% !important;
-  margin: 0 !important;
+  max-width: 1040px !important;
+  margin: 0 auto !important;
   padding: 8px 0 64px !important;
   box-sizing: border-box !important;
 }
@@ -1433,7 +1429,7 @@ body.body.cart .main--cart cart-product-recommendations .tile__prices {
 
 @media (max-width: 1080px) {
   body.body.cart .main--cart .cart-container,
-  body.body.cart .main--cart cart-product-recommendations {
+  body.body.cart .main--cart .cart-product-recommendations {
     max-width: none !important;
     padding-left: 20px !important;
     padding-right: 20px !important;
@@ -1451,7 +1447,6 @@ body.body.cart .main--cart cart-product-recommendations .tile__prices {
 
 @media (max-width: 640px) {
   body.body.cart .main--cart .cart-container { max-width: none !important; padding: 73px 0 40px !important; }
-  body.body.cart .main--cart cart-product-recommendations { padding-left: 16px !important; padding-right: 16px !important; }
   body.body.cart .main--cart .cart-container > .container.wrapper,
   body.body.cart .main--cart .cart-container > .container--8.wrapper,
   body.body.cart .main--cart .cart-container .cart-container__cart-component,
