@@ -1222,8 +1222,7 @@ body.body.cart .main--cart .cart-totals__amount {
 body.body.cart .main--cart .cart-footer__continue { grid-column: 2 !important; grid-row: 2 !important; margin: 0 !important; text-align: right !important; width: auto !important; }
 body.body.cart .main--cart .cart-footer__checkout { grid-column: 3 !important; grid-row: 2 !important; margin: 0 !important; width: auto !important; }
 
-body.body.cart .main--cart .cart-footer__continue a,
-body.body.cart .main--cart .cart-footer__continue button {
+body.body.cart .main--cart .button.button--secondary.button--large.button--expand {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1242,8 +1241,7 @@ body.body.cart .main--cart .cart-footer__continue button {
   text-decoration: none !important;
 }
 
-body.body.cart .main--cart .cart-footer__checkout button,
-body.body.cart .main--cart .cart-footer__checkout .button {
+body.body.cart .main--cart .button.button--primary.button--large.button--expand {
   width: auto !important;
   min-width: 168px !important;
   min-height: 52px !important;
@@ -1321,6 +1319,5 @@ body.body.cart .main--cart .cart-product-recommendations__title {
   body.body.cart .main--cart .cart-footer__checkout { grid-column: 1 !important; width: 100% !important; }
   body.body.cart .main--cart .cart-footer__continue { grid-row: 3 !important; text-align: center !important; }
   body.body.cart .main--cart .cart-footer__checkout { grid-row: 2 !important; }
-  body.body.cart .main--cart .cart-footer__checkout button,
-  body.body.cart .main--cart .cart-footer__checkout .button { width: 100% !important; }
+  body.body.cart .main--cart .button.button--primary.button--large.button--expand { width: 100% !important; }
 }
