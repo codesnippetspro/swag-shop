@@ -65,6 +65,9 @@
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
   var IMAGE_CACHE = {};
   var RESERVED_COLLECTION_SLUGS = { all: true };
+  var COLLECTION_NAME_OVERRIDES = {
+    'snippers': 'The Snippers'
+  };
   var COLLECTION_COVER_IMAGES = {
     'brain-100-focus-0': 'brain-100-focus-0.webp',
     'coder': 'coder.webp',
@@ -414,7 +417,7 @@
   }
 
   function displayCollectionName(slug, fallback) {
-    return fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
+    return COLLECTION_NAME_OVERRIDES[slug] || fallback || slug.replace(/-/g, ' ').replace(/\b\w/g, function (char) { return char.toUpperCase(); });
   }
 
   function productCountLabel(count) {
