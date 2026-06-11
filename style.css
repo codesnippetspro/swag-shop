@@ -796,7 +796,7 @@ body.cs-lightbox-open { overflow: hidden !important; overscroll-behavior: contai
   .cs-buyrow { flex-wrap: wrap; }
 }
 
-.cs-storefront--loading {max-width: 1400px !important;margin: 0 auto !important;padding: 56px 32px !important;}
+.cs-storefront--loading {max-width: var(--container-max-width) !important;margin: 0 auto !important;padding: 56px 52px !important;box-sizing: border-box !important;}
 .cs-skeleton,
 .cs-skeleton-grid span { position: relative; overflow: hidden; background: #f2f0ee; border-radius: 18px; }
 .cs-skeleton::after,
@@ -814,7 +814,7 @@ body.cs-lightbox-open { overflow: hidden !important; overscroll-behavior: contai
 @keyframes cs-skeleton-shimmer { 100% { transform: translateX(100%); } }
 @media (max-width: 760px) { 
   .cs-skeleton-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-  .cs-storefront--loading {padding: 56px 16px !important;}
+  .cs-storefront--loading {padding: 56px 20px !important;}
 }
 
 
