@@ -721,14 +721,14 @@
 .cs-badge { position: absolute; top: 14px; left: 14px; padding: 5px 11px; border-radius: 6px; background: var(--color-secondary); color: #fff; font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; z-index: 3; }
 
 .cs-storefront--home { padding: 0 !important; }
-.cs-hero { background: var(--teal-deep); color: #fff; overflow: hidden; }
+.cs-hero { background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; color: #fff; overflow: hidden; }
 .cs-hero__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; min-height: 500px; padding-top: var(--cs-section-padding-block); padding-bottom: var(--cs-section-padding-block); }
 .cs-hero .cs-eyebrow { color: var(--gold); }
 .cs-hero__title { font-size: 58px; font-weight: 600; line-height: 1; margin: 14px 0 20px; letter-spacing: -0.5px; color: inherit; }
 .cs-hero__sub { font-size: 18px; line-height: 1.55; color: rgba(255,255,255,0.78); max-width: 470px; margin: 0 0 28px; }
 .cs-hero__cta { display: flex; gap: 14px; flex-wrap: wrap; }
 .cs-hero__art { display: flex; align-items: center; justify-content: stretch; color: inherit; text-decoration: none; min-width: 0; }
-.cs-hero__stage { position: relative; width: 100%; max-width: none; aspect-ratio: 1 / 1; background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 40px; overflow: hidden; box-shadow: var(--shadow-product); }
+.cs-hero__stage { position: relative; width: 100%; max-width: none; aspect-ratio: 1 / 1; background-color: var(--teal-deep); border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 40px; overflow: hidden; box-shadow: var(--shadow-product); }
 .cs-hero__stage .cs-meme__block { font-size: clamp(32px, 3.6vw, 44px); color: #fff; }
 .cs-home-designs { background: #fff; }
 .cs-storefront--home .cs-section__head { padding: 0 52px; display: flex; flex-direction: column; gap: 10px; margin: 0 auto 40px; max-width: var(--container-max-width); }
@@ -738,9 +738,12 @@
 .cs-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: var(--container-max-width); margin: 0 auto; padding: 0 52px; }
 .cs-dcard { display: flex; flex-direction: column; min-width: 0; cursor: pointer; color: var(--color-on-background); text-decoration: none; }
 .cs-dcard__art { position: relative; aspect-ratio: 1/1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 10%; background: var(--tile-sand); }
+.cs-arttile--sand { background-color: var(--tile-sand); }
+.cs-arttile--mint { background-color: var(--tile-mint); }
+.cs-arttile--blush { background-color: var(--tile-blush); }
 .cs-dcard__art--image { padding: 10%; }
-.cs-hero__stage--image { padding: 40px; background-color: var(--teal-deep); }
-.pdfx-pdpart--image { padding: 0; background: #fff; }
+.cs-hero__stage--image { padding: 40px; background-color: transparent; box-shadow: none; }
+.pdfx-pdpart--image { padding: 0; background-image: none; }
 .cs-dcard__art--image .cs-collection-image { object-fit: contain; }
 .cs-hero__stage--image .cs-collection-image { object-fit: contain; }
 .pdfx-pdpart--image .cs-collection-image { object-fit: cover; }
@@ -758,6 +761,10 @@
 
 .pdfx-pdp__top { display: grid; grid-template-columns: 1.04fr 0.96fr; gap: 56px; align-items: center; padding: var(--cs-section-padding-block) 0; }
 .pdfx-pdpart { position: relative; aspect-ratio: 1/1; border-radius: 16px; overflow: hidden; padding: 40px; display: flex; align-items: center; background-color: var(--teal-deep); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 44px 44px; box-shadow: var(--shadow-product); }
+.pdfx-pdpart.cs-arttile--sand { background-color: var(--tile-sand); }
+.pdfx-pdpart.cs-arttile--mint { background-color: var(--tile-mint); }
+.pdfx-pdpart.cs-arttile--blush { background-color: var(--tile-blush); }
+.pdfx-pdpart.pdfx-pdpart--image { padding: 0; background-image: none; }
 .pdfx-pdpart__type { display: flex; flex-direction: column; gap: 4px; line-height: 0.94; }
 .pdfx-pdpart__type span { font-family: var(--font-display); font-weight: 600; font-size: 76px; letter-spacing: -1.5px; color: #fff; }
 .pdfx-pdpart__c { position: absolute; font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; color: rgba(255,255,255,0.42); }

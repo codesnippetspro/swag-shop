@@ -206,13 +206,23 @@
     return direct || collectionCoverAsset(collection);
   }
 
-  function collectionArtHtml(collection, name, count, className, loading) {
+  function collectionTileClass(collection, collections) {
+    var items = collections || [];
+    var index = items.findIndex(function (item) { return item && collection && item.slug === collection.slug; });
+    var position = index >= 0 ? index + 1 : 1;
+    if (position % 3 === 0) return 'cs-arttile--blush';
+    if (position % 2 === 0) return 'cs-arttile--mint';
+    return 'cs-arttile--sand';
+  }
+
+  function collectionArtHtml(collection, name, count, className, loading, artClass) {
     var cover = collectionCoverImage(collection);
+    var extraClass = artClass ? ' ' + artClass : '';
     if (cover) {
       preloadImage(cover);
-      return '<div class="' + className + ' ' + className + '--image"><img class="cs-collection-image" src="' + escapeHtml(cover) + '" alt="' + escapeHtml(name) + '" width="700" height="700" loading="' + (loading || 'lazy') + '" decoding="async"><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>';
+      return '<div class="' + className + ' ' + className + '--image' + extraClass + '"><img class="cs-collection-image" src="' + escapeHtml(cover) + '" alt="' + escapeHtml(name) + '" width="700" height="700" loading="' + (loading || 'lazy') + '" decoding="async"><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>';
     }
-    return '<div class="' + className + '"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>';
+    return '<div class="' + className + extraClass + '"><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(name) + '</span></div></div><span class="cs-dcard__count">' + escapeHtml(productCountLabel(count)) + '</span></div>';
   }
 
   function preloadImage(url) {
@@ -445,7 +455,7 @@
       var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
       var name = displayCollectionName(collection.slug, collection.name || collection.title);
       return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
-        + collectionArtHtml(collection, name, count, 'cs-dcard__art')
+        + collectionArtHtml(collection, name, count, 'cs-dcard__art', null, collectionTileClass(collection, designs))
         + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span></div><span class="cs-btn cs-btn--primary cs-btn--small cs-btn--full">View</span>'
         + '</a>';
     }).join('');
@@ -666,7 +676,7 @@
     var pickerHtml = hasProductPicker ? '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>' : '';
     var configureStep = hasProductPicker ? '2' : '1';
     var collectionDescription = sanitizeProductHtml(state.collection.description || '');
-    var collectionArt = collectionArtHtml(state.collection, collectionName, state.products.length, 'pdfx-pdpart', 'eager');
+    var collectionArt = collectionArtHtml(state.collection, collectionName, state.products.length, 'pdfx-pdpart', 'eager', collectionTileClass(state.collection, visibleCollections(state.collections)));
     root.innerHTML = '<section class="cs-storefront cs-storefront--collection">'
       + '<div class="cs-wrapper">'
       + '<div class="pdfx-pdp__top">'
@@ -1363,7 +1373,7 @@
         var cart = responses[2];
         var collection = collectionDetail || collections.find(function (item) { return item.slug === slug; }) || { name: 'Code Snippets', slug: slug };
         var products = collectionResponse.products;
-        return { page: 'collection', collection: collection, products: products, selection: selectionFromUrl(products), cartVariantIds: nativeCartVariantIds(cart) };
+        return { page: 'collection', collection: collection, collections: collections, products: products, selection: selectionFromUrl(products), cartVariantIds: nativeCartVariantIds(cart) };
       });
     });
 
