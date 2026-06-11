@@ -450,7 +450,7 @@
     var heroName = hero ? displayCollectionName(hero.slug, hero.name || hero.title) : 'Code Snippets';
     var heroCount = hero ? state.counts[hero.slug] || hero.productsCount || hero.products_count || 0 : 0;
     var heroHref = hero ? '/collections/' + escapeHtml(hero.slug) : '#cs-designs';
-    var heroArt = hero ? collectionArtHtml(hero, heroName, heroCount, 'cs-hero__stage', 'eager') : '<div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div>';
+    var heroArt = hero ? collectionArtHtml(hero, heroName, heroCount, 'cs-hero__stage', 'eager', collectionTileClass(hero, designs)) : '<div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div>';
     var cards = designs.map(function (collection) {
       var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
       var name = displayCollectionName(collection.slug, collection.name || collection.title);

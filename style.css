@@ -742,7 +742,7 @@
 .cs-arttile--mint { background-color: var(--tile-mint); }
 .cs-arttile--blush { background-color: var(--tile-blush); }
 .cs-dcard__art--image { padding: 10%; }
-.cs-hero__stage--image { padding: 40px; background-color: transparent; box-shadow: none; }
+.cs-hero__stage--image { padding: 40px; }
 .pdfx-pdpart--image { padding: 0; background-image: none; }
 .cs-dcard__art--image .cs-collection-image { object-fit: contain; }
 .cs-hero__stage--image .cs-collection-image { object-fit: contain; }
