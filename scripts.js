@@ -692,13 +692,45 @@
     }) || state.products[0];
   }
 
+  var lightboxScrollY = 0;
+  var lightboxBodyStyles = null;
+
   function setPageScrollLocked(locked) {
-    document.documentElement.classList.toggle('cs-lightbox-open', locked);
-    document.body.classList.toggle('cs-lightbox-open', locked);
+    if (locked) {
+      lightboxScrollY = window.scrollY || window.pageYOffset || 0;
+      lightboxBodyStyles = {
+        position: document.body.style.position,
+        top: document.body.style.top,
+        left: document.body.style.left,
+        right: document.body.style.right,
+        width: document.body.style.width
+      };
+      document.documentElement.classList.add('cs-lightbox-open');
+      document.body.classList.add('cs-lightbox-open');
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + lightboxScrollY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      return;
+    }
+
+    document.documentElement.classList.remove('cs-lightbox-open');
+    document.body.classList.remove('cs-lightbox-open');
+    if (lightboxBodyStyles) {
+      document.body.style.position = lightboxBodyStyles.position;
+      document.body.style.top = lightboxBodyStyles.top;
+      document.body.style.left = lightboxBodyStyles.left;
+      document.body.style.right = lightboxBodyStyles.right;
+      document.body.style.width = lightboxBodyStyles.width;
+      lightboxBodyStyles = null;
+    }
+    window.scrollTo(0, lightboxScrollY || 0);
   }
 
   function closeProductLightbox() {
     var lightbox = qs('.cs-lightbox');
+    if (!lightbox && !document.body.classList.contains('cs-lightbox-open')) return;
     if (lightbox) lightbox.remove();
     setPageScrollLocked(false);
   }
@@ -717,11 +749,20 @@
       + '<button type="button" class="cs-lightbox__close" data-lightbox-close aria-label="Close image gallery">×</button>'
       + '<button type="button" class="cs-lightbox__nav cs-lightbox__nav--prev" data-lightbox-prev aria-label="Previous image">‹</button>'
       + '<button type="button" class="cs-lightbox__nav cs-lightbox__nav--next" data-lightbox-next aria-label="Next image">›</button>'
-      + '<button type="button" class="cs-lightbox__zoom" data-lightbox-zoom aria-label="Zoom image">Zoom</button>'
+      + '<button type="button" class="cs-lightbox__zoom" data-lightbox-zoom aria-label="Zoom in">Zoom in</button>'
       + '<div class="cs-lightbox__stage"><img class="cs-lightbox__image" src="' + escapeHtml(image) + '" alt="Product image ' + escapeHtml(index + 1) + '" draggable="false"></div>'
       + '<div class="cs-lightbox__meta">' + escapeHtml(index + 1) + ' / ' + escapeHtml(images.length) + '</div>'
       + '<div class="cs-lightbox__thumbs">' + thumbs + '</div>'
       + '</div></div>';
+  }
+
+  function updateLightboxZoomLabel(lightbox) {
+    if (!lightbox) return;
+    var zoomButton = lightbox.querySelector('[data-lightbox-zoom]');
+    var zoomed = lightbox.classList.contains('is-zoomed');
+    if (!zoomButton) return;
+    zoomButton.textContent = zoomed ? 'Zoom out' : 'Zoom in';
+    zoomButton.setAttribute('aria-label', zoomed ? 'Zoom out' : 'Zoom in');
   }
 
   function updateLightbox(lightbox, images, index) {
@@ -731,6 +772,7 @@
     template.innerHTML = renderProductLightbox(images, index, background);
     var next = template.content.firstElementChild;
     if (zoomed && next) next.classList.add('is-zoomed');
+    updateLightboxZoomLabel(next);
     lightbox.replaceWith(next);
   }
 
@@ -830,6 +872,7 @@
         closeProductLightbox();
       } else if (event.target.closest('[data-lightbox-zoom]') || event.target.closest('.cs-lightbox__image')) {
         lightbox.classList.toggle('is-zoomed');
+        updateLightboxZoomLabel(lightbox);
       } else if (event.target.closest('[data-lightbox-prev]') && images.length) {
         updateLightbox(lightbox, images, (current - 1 + images.length) % images.length);
       } else if (event.target.closest('[data-lightbox-next]') && images.length) {
