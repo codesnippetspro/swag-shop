@@ -1149,7 +1149,7 @@
       button.setAttribute('aria-label', 'Adding to cart');
       button.setAttribute('title', 'Adding to cart');
     } else {
-      button.textContent = 'Adding…';
+      button.textContent = 'Loading..';
     }
     var request = addNativeCartItem(variant.id, quantity);
     request.then(function (cart) {
