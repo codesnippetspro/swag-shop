@@ -1350,6 +1350,10 @@ body.body.cart .main--cart .cart-product-recommendations__items > * {
   align-self: stretch !important;
 }
 
+body.body.cart .main--cart cart-product-recommendations .product-tile {
+  width: 100%;
+}
+
 body.body.cart .main--cart cart-product-recommendations .tile {
   height: 100% !important;
   display: flex !important;
