@@ -600,11 +600,22 @@
   function preserveRailScroll(root) {
     var positions = [];
     root.querySelectorAll('.pdfx-medrail, .pdfx-imgrail').forEach(function (rail) {
-      positions.push({ rail: rail, left: rail.scrollLeft });
+      var selector = rail.classList.contains('pdfx-medrail') ? '.pdfx-medrail' : '.pdfx-imgrail';
+      var siblings = Array.prototype.slice.call(root.querySelectorAll(selector));
+      positions.push({
+        rail: rail,
+        selector: selector,
+        index: Math.max(0, siblings.indexOf(rail)),
+        left: rail.scrollLeft,
+        top: rail.scrollTop
+      });
     });
     return function () {
       positions.forEach(function (item) {
-        if (item.rail && item.rail.isConnected) item.rail.scrollLeft = item.left;
+        var target = item.rail && item.rail.isConnected ? item.rail : root.querySelectorAll(item.selector)[item.index];
+        if (!target) return;
+        target.scrollLeft = item.left;
+        target.scrollTop = item.top;
       });
     };
   }
@@ -766,9 +777,12 @@
       var accordionButton = event.target.closest('.pdfx-acc__head');
       if (productButton) {
         var product = state.products.find(function (item) { return item.slug === productButton.dataset.product; });
+        var restoreRailScroll = preserveRailScroll(root);
         state.selection = defaultSelection(product);
         syncUrl(state.selection, product, selectedVariant(product, state.selection));
         render(root, state);
+        restoreRailScroll();
+        window.requestAnimationFrame(restoreRailScroll);
       } else if (colorButton) {
         var colorProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         updateSelectionFromVariant(state, colorProduct, variantForOption(colorProduct, state.selection, 'color', colorButton.dataset.color));
