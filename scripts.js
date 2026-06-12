@@ -63,6 +63,7 @@
   var API_BASE = 'https://storefront-api.fourthwall.com/v1';
   var CURRENCY = requestedCurrency();
   var CART_STORAGE_KEY = 'cs_storefront_cart_id';
+  var API_CACHE_BUSTER = String(Date.now());
   var IMAGE_CACHE = {};
   var RESERVED_COLLECTION_SLUGS = { all: true };
 
@@ -82,12 +83,14 @@
   function apiUrl(path, params) {
     var query = new URLSearchParams(params || {});
     query.set('storefront_token', STOREFRONT_TOKEN);
+    query.set('_cs_sync', API_CACHE_BUSTER);
     return API_BASE + path + '?' + query.toString();
   }
 
   function fetchJson(path, params, options) {
     return fetch(apiUrl(path, params), Object.assign({
-      headers: { 'Accept': 'application/json' }
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
     }, options || {})).then(function (response) {
       if (!response.ok) {
         throw new Error('Fourthwall API ' + response.status + ' for ' + path);
