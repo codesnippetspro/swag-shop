@@ -1169,7 +1169,7 @@
       state.cartVariantIds[String(variant.id)] = true;
       button.classList.add('has-cart-item');
       if (goToCheckout) {
-        button.textContent = 'Added';
+        button.textContent = 'Loading..';
         goToNativeCheckout();
         return;
       }
