@@ -155,6 +155,7 @@
 
   function productType(product) {
     var value = ((product.name || '') + ' ' + (product.slug || '')).toLowerCase();
+    if (value.indexOf('hoodie') !== -1 || value.indexOf('hooded') !== -1) return 'Hoodie';
     if (value.indexOf('woman') !== -1) return 'Woman fit tee';
     if (value.indexOf('unisex') !== -1 || value.indexOf('tee') !== -1 || value.indexOf('t-shirt') !== -1) return 'Unisex tee';
     if (value.indexOf('travel') !== -1 && value.indexOf('mug') !== -1) return 'Travel mug';
