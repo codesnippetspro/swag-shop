@@ -519,9 +519,9 @@
     var previous = table.previousElementSibling;
     if (previous) context += ' ' + previous.textContent;
     context += ' ' + table.textContent;
-    if (/centimet(?:er|re)|\bcm\b/i.test(context)) return { key: 'cm', label: 'Centimeters' };
-    if (/inch|\bin\b/i.test(context)) return { key: 'in', label: 'Inches' };
-    return index === 0 ? { key: 'in', label: 'Inches' } : { key: 'cm', label: 'Centimeters' };
+    if (/centimet(?:er|re)|\bcm\b/i.test(context)) return { key: 'cm', label: 'cm' };
+    if (/inch|\bin\b/i.test(context)) return { key: 'in', label: 'in' };
+    return index === 0 ? { key: 'in', label: 'in' } : { key: 'cm', label: 'cm' };
   }
 
   function enhanceSizeAndFitHtml(html) {
@@ -552,6 +552,16 @@
     var controls = uniqueUnits.length > 1 ? '<div class="cs-sizefit__switch" role="tablist" aria-label="Measurement unit">' + uniqueUnits.map(function (unit, index) {
       return '<button type="button" class="cs-sizefit__unit' + (index === 0 ? ' is-active' : '') + '" data-size-unit="' + unit.key + '" aria-selected="' + (index === 0 ? 'true' : 'false') + '">' + escapeHtml(unit.label) + '</button>';
     }).join('') + '</div>' : '';
+
+    Array.prototype.slice.call(template.content.querySelectorAll('a')).forEach(function (link) {
+      var label = (link.textContent || '').trim();
+      var href = link.getAttribute('href') || '';
+      if (!/measurement diagram/i.test(label) && !/product-measure/i.test(href)) return;
+      link.classList.add('cs-sizefit__diagram-link');
+      link.setAttribute('data-size-diagram', href);
+      link.removeAttribute('target');
+      link.removeAttribute('rel');
+    });
 
     var textHtml = template.innerHTML.trim();
     if (!textHtml) {
@@ -830,6 +840,26 @@
       + '</div></div>';
   }
 
+  function renderMeasurementLightbox(url) {
+    return '<div class="cs-lightbox cs-lightbox--diagram" role="dialog" aria-modal="true" aria-label="Measurement diagram" style="--cs-lightbox-bg:#F7F4EF">'
+      + '<button type="button" class="cs-lightbox__backdrop" data-lightbox-close aria-label="Close measurement diagram"></button>'
+      + '<div class="cs-lightbox__panel cs-lightbox__panel--diagram">'
+      + '<button type="button" class="cs-lightbox__close" data-lightbox-close aria-label="Close measurement diagram">×</button>'
+      + '<button type="button" class="cs-lightbox__zoom" data-lightbox-zoom aria-label="Zoom in">Zoom in</button>'
+      + '<div class="cs-lightbox__stage"><img class="cs-lightbox__image cs-lightbox__image--diagram" src="' + escapeHtml(url) + '" alt="Measurement diagram" draggable="false"></div>'
+      + '</div></div>';
+  }
+
+  function openMeasurementDiagram(url) {
+    if (!url) return;
+    preloadImage(url);
+    closeProductLightbox();
+    var template = document.createElement('template');
+    template.innerHTML = renderMeasurementLightbox(url);
+    document.body.appendChild(template.content.firstElementChild);
+    setPageScrollLocked(true);
+  }
+
   function updateLightboxZoomLabel(lightbox) {
     if (!lightbox) return;
     var zoomButton = lightbox.querySelector('[data-lightbox-zoom]');
@@ -892,7 +922,11 @@
       var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       var accordionButton = event.target.closest('.pdfx-acc__head');
       var sizeUnitButton = event.target.closest('[data-size-unit]');
-      if (sizeUnitButton) {
+      var diagramLink = event.target.closest('[data-size-diagram]');
+      if (diagramLink) {
+        event.preventDefault();
+        openMeasurementDiagram(diagramLink.getAttribute('href') || diagramLink.dataset.sizeDiagram);
+      } else if (sizeUnitButton) {
         var sizeFit = sizeUnitButton.closest('.cs-sizefit');
         var unit = sizeUnitButton.dataset.sizeUnit;
         if (!sizeFit || !unit) return;

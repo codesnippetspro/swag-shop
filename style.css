@@ -856,8 +856,11 @@ body.cs-lightbox-open { overflow: hidden !important; overscroll-behavior: contai
 .cs-lightbox { position: fixed; inset: 0; z-index: 999999; display: grid; place-items: center; color: #fff; }
 .cs-lightbox__backdrop { position: absolute; inset: 0; border: 0; background: var(--cs-lightbox-bg, #F5F0E8); cursor: zoom-out; }
 .cs-lightbox__panel { position: relative; width: min(1120px, calc(100vw - 40px)); height: min(860px, calc(100vh - 40px)); display: grid; grid-template-rows: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; }
+.cs-lightbox__panel--diagram { grid-template-rows: minmax(0, 1fr); width: min(980px, calc(100vw - 40px)); height: min(760px, calc(100vh - 40px)); }
 .cs-lightbox__stage { min-width: 0; min-height: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: auto; border-radius: 18px; }
+.cs-lightbox--diagram .cs-lightbox__stage { background: #fff; border: 1px solid rgba(0,0,0,0.08); box-shadow: var(--shadow-product); }
 .cs-lightbox__image { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; transition: transform .18s ease; transform-origin: center; }
+.cs-lightbox__image--diagram { padding: 24px; box-sizing: border-box; }
 .cs-lightbox.is-zoomed .cs-lightbox__stage { align-items: flex-start; justify-content: flex-start; background: rgba(0,0,0,0.22); }
 .cs-lightbox.is-zoomed .cs-lightbox__image { max-width: none; max-height: none; width: auto; height: auto; transform: scale(1.8); transform-origin: top left; cursor: zoom-out; }
 .cs-lightbox__close,
@@ -889,11 +892,15 @@ body.cs-lightbox-open { overflow: hidden !important; overscroll-behavior: contai
 .cs-sizefit__text > :last-child { margin-bottom: 0; }
 .cs-sizefit__table { min-width: 0; }
 .cs-sizefit__switch { display: inline-flex; gap: 4px; margin: 0 0 12px; padding: 4px; border: 1px solid var(--border-light); border-radius: 999px; background: #F7F4EF; }
-.cs-sizefit__unit { min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 600; line-height: 1; }
+.cs-sizefit__unit { min-width: 46px; min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; font-family: var(--font-display); font-size: 13px; font-weight: 600; line-height: 1; text-transform: lowercase; }
 .cs-sizefit__unit.is-active { background: var(--teal-heading); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.cs-sizefit__diagram-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--color-primary); font-weight: 600; text-decoration: none; }
+.cs-sizefit__diagram-link:hover,
+.cs-sizefit__diagram-link:focus-visible { text-decoration: underline; }
+.cs-sizefit__diagram-link::after { content: '↗'; font-size: 12px; line-height: 1; transform: rotate(-45deg); }
 .cs-sizefit__tablewrap { width: 100%; overflow-x: auto; border: 1px solid var(--border-light); border-radius: 12px; background: #fff; box-shadow: var(--shadow-card); }
 .cs-sizefit__pane[hidden] { display: none !important; }
-.cs-sizefit__grid { width: 100%; min-width: 420px; border-collapse: separate; border-spacing: 0; color: var(--color-on-background); font-family: var(--font-display); font-size: 14px; line-height: 1.35; }
+.cs-sizefit__grid { width: 100%; min-width: 420px; table-layout: fixed; border-collapse: separate; border-spacing: 0; color: var(--color-on-background); font-family: var(--font-display); font-size: 14px; line-height: 1.35; }
 .cs-sizefit__grid caption { padding: 14px 16px; color: var(--teal-heading); font-weight: 600; text-align: left; }
 .cs-sizefit__grid th,
 .cs-sizefit__grid td { padding: 12px 14px; border: 0; border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); text-align: center; vertical-align: middle; }
