@@ -514,6 +514,53 @@
     return titles[type] || fallback || 'Product information';
   }
 
+  function sizeUnitLabel(table, index) {
+    var context = '';
+    var previous = table.previousElementSibling;
+    if (previous) context += ' ' + previous.textContent;
+    context += ' ' + table.textContent;
+    if (/centimet(?:er|re)|\bcm\b/i.test(context)) return { key: 'cm', label: 'Centimeters' };
+    if (/inch|\bin\b/i.test(context)) return { key: 'in', label: 'Inches' };
+    return index === 0 ? { key: 'in', label: 'Inches' } : { key: 'cm', label: 'Centimeters' };
+  }
+
+  function enhanceSizeAndFitHtml(html) {
+    var template = document.createElement('template');
+    template.innerHTML = html;
+    var tables = Array.prototype.slice.call(template.content.querySelectorAll('table'));
+    if (!tables.length) return html;
+
+    var tablePanes = tables.map(function (table, index) {
+      var unit = sizeUnitLabel(table, index);
+      var active = index === 0;
+      var heading = table.previousElementSibling;
+      if (heading && /^H[1-6]$/.test(heading.tagName) && /size guide/i.test(heading.textContent || '')) heading.remove();
+      table.remove();
+      table.classList.add('cs-sizefit__grid');
+      return {
+        key: unit.key,
+        label: unit.label,
+        html: '<div class="cs-sizefit__pane' + (active ? ' is-active' : '') + '" data-size-pane="' + unit.key + '"' + (active ? '' : ' hidden') + '>' + table.outerHTML + '</div>'
+      };
+    });
+
+    var uniqueUnits = [];
+    tablePanes.forEach(function (pane) {
+      if (!uniqueUnits.some(function (item) { return item.key === pane.key; })) uniqueUnits.push({ key: pane.key, label: pane.label });
+    });
+
+    var controls = uniqueUnits.length > 1 ? '<div class="cs-sizefit__switch" role="tablist" aria-label="Measurement unit">' + uniqueUnits.map(function (unit, index) {
+      return '<button type="button" class="cs-sizefit__unit' + (index === 0 ? ' is-active' : '') + '" data-size-unit="' + unit.key + '" aria-selected="' + (index === 0 ? 'true' : 'false') + '">' + escapeHtml(unit.label) + '</button>';
+    }).join('') + '</div>' : '';
+
+    var textHtml = template.innerHTML.trim();
+    if (!textHtml) {
+      textHtml = '<p>Use the measurements in the table to compare against a similar item that fits well.</p>';
+    }
+
+    return '<div class="cs-sizefit"><div class="cs-sizefit__text">' + textHtml + '</div><div class="cs-sizefit__table">' + controls + '<div class="cs-sizefit__tablewrap">' + tablePanes.map(function (pane) { return pane.html; }).join('') + '</div></div></div>';
+  }
+
   function renderProductAccordion(product) {
     var rows = [];
     if (product.description) {
@@ -521,7 +568,10 @@
     }
     (product.additionalInformation || []).forEach(function (item) {
       if (!item || !item.bodyHtml) return;
-      rows.push({ title: item.title || accordionTitle(item.type), body: sanitizeProductHtml(item.bodyHtml) });
+      var title = item.title || accordionTitle(item.type);
+      var body = sanitizeProductHtml(item.bodyHtml);
+      if (item.type === 'SIZE_AND_FIT' || /size\s*&\s*fit|size\s+and\s+fit/i.test(title)) body = enhanceSizeAndFitHtml(body);
+      rows.push({ title: title, body: body });
     });
     if (product.sizeGuide && (product.sizeGuide.description || product.sizeGuide.previewUrl || product.sizeGuide.fileUrl || product.sizeGuide.fitGuideDescription)) {
       var sizeBody = '';
@@ -841,7 +891,22 @@
       var lightboxOpen = event.target.closest('[data-lightbox-open]');
       var copyTarget = event.target.closest('.pdfx-url[data-copy-link]');
       var accordionButton = event.target.closest('.pdfx-acc__head');
-      if (productButton) {
+      var sizeUnitButton = event.target.closest('[data-size-unit]');
+      if (sizeUnitButton) {
+        var sizeFit = sizeUnitButton.closest('.cs-sizefit');
+        var unit = sizeUnitButton.dataset.sizeUnit;
+        if (!sizeFit || !unit) return;
+        sizeFit.querySelectorAll('[data-size-unit]').forEach(function (button) {
+          var active = button.dataset.sizeUnit === unit;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        sizeFit.querySelectorAll('[data-size-pane]').forEach(function (pane) {
+          var active = pane.dataset.sizePane === unit;
+          pane.classList.toggle('is-active', active);
+          pane.hidden = !active;
+        });
+      } else if (productButton) {
         var product = state.products.find(function (item) { return item.slug === productButton.dataset.product; });
         var restoreRailScroll = preserveRailScroll(root);
         state.selection = defaultSelection(product);
