@@ -442,6 +442,17 @@
     return count === 1 ? '1 product' : count + ' products';
   }
 
+  function colorCountLabel(count) {
+    return count === 1 ? '1 color' : count + ' colors';
+  }
+
+  function scrollToConfigure(root) {
+    window.requestAnimationFrame(function () {
+      var target = root.querySelector('.cs-storefront__configure');
+      if (target) target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+  }
+
   function randomItem(items) {
     if (!items || !items.length) return null;
     var random = window.crypto && window.crypto.getRandomValues ? window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296 : Math.random();
@@ -606,7 +617,7 @@
       var active = item.slug === activeProduct.slug;
       return '<div class="pdfx-medslot' + (active ? ' pdfx-medslot--on' : '') + '"><button type="button" class="pdfx-medcard' + (active ? ' pdfx-medcard--on' : '') + '" data-product="' + escapeHtml(item.slug) + '">'
         + '<div class="pdfx-medcard__stage">' + (active ? '<span class="pdfx-medcard__sel">Selected</span>' : '') + (firstImage(item, variant) ? '<img class="cs-product-image" src="' + escapeHtml(firstImage(item, variant)) + '" alt="' + escapeHtml(item.name) + '" width="720" height="960" loading="eager" decoding="async">' : '') + '</div>'
-        + '<span class="pdfx-medcard__name">' + escapeHtml(productType(item)) + '</span><span class="pdfx-medcard__meta"><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b><span>' + escapeHtml(uniqueColors(item).length ? uniqueColors(item).length + ' colors' : 'one size') + '</span></span>'
+        + '<span class="pdfx-medcard__name">' + escapeHtml(productType(item)) + '</span><span class="pdfx-medcard__meta"><b>' + escapeHtml(money(variant && variant.unitPrice)) + '</b><span>' + escapeHtml(uniqueColors(item).length ? colorCountLabel(uniqueColors(item).length) : 'one size') + '</span></span>'
         + '</button></div>';
     }).join('') + '</div>';
   }
@@ -678,7 +689,7 @@
     var cartClass = variantInCart(state, variant && variant.id) ? ' has-cart-item' : '';
     var cartLabel = cartClass ? 'Added to cart' : 'Add to cart';
     var cfgClass = productImagesForVariant(product, variant).length < 2 ? ' pdfx-cfg--single-image' : '';
-    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Configure your ' + escapeHtml(productType(product)) + '</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg' + cfgClass + '"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart' + cartClass + '" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="' + cartLabel + '" title="' + cartLabel + '"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" aria-label="Copy link" title="Share link"><i class="gg-share" aria-hidden="true"></i></button><code>' + escapeHtml(window.location.pathname + window.location.search) + '</code></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
+    return '<section class="cs-section cs-storefront__configure"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Choose options</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg' + cfgClass + '"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--carticon cs-storefront__cart' + cartClass + '" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="' + cartLabel + '" title="' + cartLabel + '"' + (stockStatus.available ? '' : ' disabled') + '>' + cartIconHtml() + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" class="pdfx-sharebtn" aria-label="Share this configuration" title="Share this configuration"><i class="gg-share" aria-hidden="true"></i><span class="pdfx-sharebtn__label">Share this configuration</span></button></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
   }
 
   function preserveRailScroll(root) {
@@ -737,7 +748,7 @@
     var collectionPrice = lowestCollectionPrice(state.products);
     var collectionName = displayCollectionName(state.collection.slug, state.collection.name || state.collection.title);
     var hasProductPicker = state.products.length > 1;
-    var pickerHtml = hasProductPicker ? '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Pick a product</span><div class="pdfx-stephead"><h2 class="cs-h2">Same design. ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Pick what you want it on. Options for each product appear below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>' : '';
+    var pickerHtml = hasProductPicker ? '<section class="cs-section cs-section--grey"><div class="cs-wrapper"><span class="pdfx-steppill"><span class="n">1</span>Choose product</span><div class="pdfx-stephead"><h2 class="cs-h2">Choose from ' + escapeHtml(productCountLabel(state.products.length)) + '.</h2><p class="hint">Select a product, then choose colour, size, and quantity below.</p></div>' + renderMediumRail(state.products, product) + '</div></section>' : '';
     var configureStep = hasProductPicker ? '2' : '1';
     var collectionDescription = sanitizeProductHtml(state.collection.description || '');
     var collectionArt = collectionArtHtml(state.collection, collectionName, state.products.length, 'pdfx-pdpart', 'eager', collectionTileClass(state.collection, visibleCollections(state.collections)));
@@ -948,6 +959,7 @@
         render(root, state);
         restoreRailScroll();
         window.requestAnimationFrame(restoreRailScroll);
+        scrollToConfigure(root);
       } else if (colorButton) {
         var colorProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         updateSelectionFromVariant(state, colorProduct, variantForOption(colorProduct, state.selection, 'color', colorButton.dataset.color));
@@ -1062,10 +1074,13 @@
       button.setAttribute('aria-label', label);
       button.setAttribute('title', label);
       target.classList.toggle('pdfx-url--copied', label === 'Copied');
+      var textLabel = target.querySelector('.pdfx-sharebtn__label');
+      if (textLabel) textLabel.textContent = label === 'Copied' ? 'Copied!' : label;
       window.setTimeout(function () {
         target.setAttribute('aria-label', originalLabel);
         button.setAttribute('aria-label', originalLabel);
         button.setAttribute('title', originalLabel);
+        if (textLabel) textLabel.textContent = 'Share this configuration';
         target.classList.remove('pdfx-url--copied');
       }, 1800);
     }
@@ -1120,9 +1135,7 @@
       params.set('q', selection.quantity || 1);
     }
     window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
-    var shareCode = qs('.pdfx-url code');
     var shareButton = qs('[data-copy-link]');
-    if (shareCode) shareCode.textContent = window.location.pathname + window.location.search;
     if (shareButton) shareButton.setAttribute('data-copy-link', window.location.href);
   }
 

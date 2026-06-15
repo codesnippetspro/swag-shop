@@ -841,11 +841,11 @@
 .cs-btn--carticon.is-added { border-color: var(--color-primary); background: rgba(244, 121, 32, 0.08); }
 .cs-btn--carticon.is-loading { opacity: 0.7; }
 .cs-ship { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--text-muted); margin-top: 22px; }
-.pdfx-url { display: flex; align-items: center; gap: 10px; margin-top: 22px; background: var(--bg-section); border-radius: 8px; padding: 11px 14px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; }
-.pdfx-url code { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: var(--text-mono-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pdfx-url button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 24px; height: 24px; border: none; background: none; color: var(--color-primary); cursor: pointer; padding: 0; }
-.pdfx-url .gg-share { --ggs: 0.78; }
-.pdfx-url--copied { outline: 1px solid rgba(var(--color-primary-rgb), 0.35); }
+.pdfx-url { display: flex; align-items: center; margin-top: 22px; }
+.pdfx-sharebtn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; border: 1.5px solid var(--color-primary); border-radius: 999px; background: #fff; color: var(--color-primary); cursor: pointer; padding: 0 18px; font-weight: 600; font-size: 15px; transition: background .12s, color .12s, border-color .12s; }
+.pdfx-sharebtn:hover, .pdfx-sharebtn:focus-visible { background: rgba(var(--color-primary-rgb), 0.08); outline: none; }
+.pdfx-sharebtn .gg-share { --ggs: 0.78; flex: 0 0 auto; }
+.pdfx-url--copied .pdfx-sharebtn { background: var(--color-primary); color: #fff; }
 .pdfx-imgrail { flex: 0 0 auto; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: 84px; gap: 10px; align-content: start; align-items: start; justify-content: start; margin-top: 18px; overflow-x: auto; padding: 4px 2px 2px; scroll-snap-type: x proximity; }
 .pdfx-imgrail--empty { display: block; }
 .pdfx-imgthumb { width: 84px; height: 112px; min-width: 84px; aspect-ratio: auto; border: 1.5px solid var(--border-light); border-radius: 9px; background: var(--tile-sand); cursor: pointer; overflow: hidden; padding: 6px; scroll-snap-align: start; transition: border-color .12s, box-shadow .12s; }
