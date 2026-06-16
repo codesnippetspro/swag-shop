@@ -292,6 +292,34 @@
     return size && size.name || '';
   }
 
+  function trimDecimal(value) {
+    return String(value).replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
+  }
+
+  function formatMetricVolume(fluidOunces) {
+    var milliliters = fluidOunces * 29.5735295625;
+    if (milliliters >= 1000) return trimDecimal((milliliters / 1000).toFixed(2)) + ' L';
+    return Math.round(milliliters / 10) * 10 + ' ml';
+  }
+
+  function formatMetricLength(inches) {
+    return trimDecimal((inches * 2.54).toFixed(1)) + ' cm';
+  }
+
+  function dualUnitLabel(value) {
+    var label = String(value || '').trim();
+    if (!label) return '';
+    if (/\b(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b/i.test(label) || /\bcm\b|centimet(?:er|re)s?/i.test(label)) return label;
+
+    var volumeMatch = label.match(/^(\d+(?:\.\d+)?)\s*(?:fl\.?\s*)?oz\b/i);
+    if (volumeMatch) return label + ' / ' + formatMetricVolume(parseFloat(volumeMatch[1]));
+
+    var lengthMatch = label.match(/^(\d+(?:\.\d+)?)\s*(?:in|inch|inches|\")\b/i);
+    if (lengthMatch) return label + ' / ' + formatMetricLength(parseFloat(lengthMatch[1]));
+
+    return label;
+  }
+
   function uniqueColors(product) {
     var seen = {};
     return (product.variants || []).reduce(function (colors, variant) {
@@ -387,7 +415,7 @@
     }).join('') + '</div></div>' : '';
     var sizeHtml = sizes.length > 1 ? '<div class="cs-storefront__option-group"><span>Size</span><div class="cs-storefront__sizes">' + sizes.map(function (size) {
       var active = size === selection.size ? ' is-active' : '';
-      return '<button type="button" class="cs-storefront__size' + active + '" data-size="' + escapeHtml(size) + '">' + escapeHtml(size) + '</button>';
+      return '<button type="button" class="cs-storefront__size' + active + '" data-size="' + escapeHtml(size) + '">' + escapeHtml(dualUnitLabel(size)) + '</button>';
     }).join('') + '</div></div>' : '';
     return colorHtml + sizeHtml;
   }
