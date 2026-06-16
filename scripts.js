@@ -1464,6 +1464,10 @@
       STOREFRONT_TOKEN = decodeStorefrontToken(sourceRoot.getAttribute('data-storefront-token') || '');
     }
 
+    if (!sourceRoot && isCollectionsIndexPage() && !STOREFRONT_TOKEN) {
+      STOREFRONT_TOKEN = decodeStorefrontToken('cHRrbl9iNmE5ZjQ0MC02OGJhLTQxMzMtYTRlOC0wOTc3NDU3OGE0ZWY=');
+    }
+
     if (sourceRoot) sourceRoot.remove();
     if (!STOREFRONT_TOKEN) return null;
 
