@@ -728,6 +728,8 @@ html { scroll-behavior: smooth; }
 .cs-hero__inner--center { display: flex; justify-content: center; min-height: 360px; text-align: center; }
 .cs-hero__inner--center .cs-hero__copy { max-width: 760px; }
 .cs-hero__inner--center .cs-hero__sub { margin-left: auto; margin-right: auto; }
+.cs-storefront--collections-index .cs-hero__title { line-height: 1.25; }
+.cs-storefront--collections-index .cs-hero__sub { font-size: 1.375rem; }
 .cs-hero .cs-eyebrow { color: var(--gold); }
 .cs-hero__title { font-size: 58px; font-weight: 600; line-height: 1; margin: 14px 0 20px; letter-spacing: -0.5px; color: inherit; }
 .cs-hero__sub { font-size: 18px; line-height: 1.55; color: rgba(255,255,255,0.78); max-width: 470px; margin: 0 0 28px; }
