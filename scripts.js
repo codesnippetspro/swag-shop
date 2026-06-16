@@ -442,6 +442,12 @@
     return segments.length === 1 && /^[a-z]{2}(?:-[a-z0-9]{2,4})?$/i.test(segments[0]);
   }
 
+  function isCollectionsIndexPage() {
+    var segments = window.location.pathname.split('/').filter(Boolean);
+    if (segments.length === 1) return segments[0] === 'collections';
+    return segments.length === 2 && /^[a-z]{2}(?:-[a-z0-9]{2,4})?$/i.test(segments[0]) && segments[1] === 'collections';
+  }
+
   function isAllCollectionsPage() {
     var segments = window.location.pathname.split('/').filter(Boolean);
     if (segments.length === 2) {
@@ -487,6 +493,18 @@
     return items[Math.floor(random * items.length)];
   }
 
+  function renderCollectionCards(collections, counts) {
+    var designs = visibleCollections(collections);
+    return designs.map(function (collection) {
+      var count = counts[collection.slug] || collection.productsCount || collection.products_count || 0;
+      var name = displayCollectionName(collection.slug, collection.name || collection.title);
+      return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
+        + collectionArtHtml(collection, name, count, 'cs-dcard__art', null, collectionTileClass(collection, designs))
+        + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span></div><span class="cs-btn cs-btn--primary cs-btn--small cs-btn--full">View</span>'
+        + '</a>';
+    }).join('');
+  }
+
   function renderHome(root, state) {
     var designs = visibleCollections(state.collections);
     var hero = randomItem(designs) || null;
@@ -494,18 +512,19 @@
     var heroCount = hero ? state.counts[hero.slug] || hero.productsCount || hero.products_count || 0 : 0;
     var heroHref = hero ? '/collections/' + escapeHtml(hero.slug) : '#cs-designs';
     var heroArt = hero ? collectionArtHtml(hero, heroName, heroCount, 'cs-hero__stage', 'eager', collectionTileClass(hero, designs)) : '<div class="cs-hero__stage"><span class="cs-badge">' + escapeHtml(productCountLabel(heroCount)) + '</span><div class="cs-meme"><div class="cs-meme__stack"><span class="cs-meme__block">' + escapeHtml(heroName) + '</span></div></div></div>';
-    var cards = designs.map(function (collection) {
-      var count = state.counts[collection.slug] || collection.productsCount || collection.products_count || 0;
-      var name = displayCollectionName(collection.slug, collection.name || collection.title);
-      return '<a class="cs-dcard" href="/collections/' + escapeHtml(collection.slug) + '">'
-        + collectionArtHtml(collection, name, count, 'cs-dcard__art', null, collectionTileClass(collection, designs))
-        + '<div class="cs-dcard__info"><span class="cs-dcard__name">' + escapeHtml(name) + '</span></div><span class="cs-btn cs-btn--primary cs-btn--small cs-btn--full">View</span>'
-        + '</a>';
-    }).join('');
+    var cards = renderCollectionCards(state.collections, state.counts);
 
     root.innerHTML = '<section class="cs-storefront cs-storefront--home">'
       + '<section class="cs-hero"><div class="cs-wrapper cs-hero__inner"><div class="cs-hero__copy"><span class="cs-eyebrow">We make it work</span><h1 class="cs-hero__title">Pick a design.<br>Configure the goods.</h1><p class="cs-hero__sub">Open a design, choose the product, color and size, then add it to your cart from one page.</p><div class="cs-hero__cta"><a class="cs-btn cs-btn--primary cs-btn--large" href="#cs-designs">Browse Designs</a><a class="cs-btn cs-btn--secondary cs-btn--large" href="' + heroHref + '">Configure a Design →</a></div></div><a class="cs-hero__art" href="' + heroHref + '">' + heroArt + '</a></div></section>'
       + '<section class="cs-section cs-home-designs" id="cs-designs"><div class="cs-wrapper"><div class="cs-section__head"><span class="cs-eyebrow">Shop by design</span><h2 class="cs-h2">Open a design to configure it</h2><p class="cs-section__desc">Each design is a collection. Inside, a single configurator lets you choose the product, color and size. No hopping between pages.</p></div><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
+      + '</section>';
+  }
+
+  function renderCollectionsLanding(root, state) {
+    var cards = renderCollectionCards(state.collections, state.counts);
+    root.innerHTML = '<section class="cs-storefront cs-storefront--collections-index">'
+      + '<section class="cs-hero cs-hero--center"><div class="cs-wrapper cs-hero__inner cs-hero__inner--center"><div class="cs-hero__copy"><h1 class="cs-hero__title">Choose your <br>Code Snippets look.</h1><p class="cs-hero__sub">Pick a design to configure.</p></div></div></section>'
+      + '<section class="cs-section cs-home-designs"><div class="cs-wrapper"><div class="cs-grid cs-grid--4">' + cards + '</div></div></section>'
       + '</section>';
   }
 
@@ -1432,23 +1451,25 @@
   }
 
   function isManagedStorefrontPage() {
-    return isHomePage() || isCollectionPage() || isProductPage();
+    return isHomePage() || isCollectionsIndexPage() || isCollectionPage() || isProductPage();
   }
 
   function ensureMountRoot() {
     if (!isManagedStorefrontPage()) return null;
     var sourceRoot = qs('root');
-    if (!sourceRoot) return null;
-
-    var pageMain = sourceRoot.closest('.page__main') || qs('.page__main');
+    var pageMain = sourceRoot && sourceRoot.closest('.page__main') || qs('.page__main');
     if (!pageMain) return null;
 
-    if (!STOREFRONT_TOKEN) {
+    if (sourceRoot && !STOREFRONT_TOKEN) {
       STOREFRONT_TOKEN = decodeStorefrontToken(sourceRoot.getAttribute('data-storefront-token') || '');
     }
 
-    sourceRoot.remove();
+    if (sourceRoot) sourceRoot.remove();
     if (!STOREFRONT_TOKEN) return null;
+
+    if (!sourceRoot && isCollectionsIndexPage()) {
+      pageMain.innerHTML = '';
+    }
 
     return pageMain;
   }
@@ -1514,9 +1535,9 @@
     }
     renderSkeleton(mount);
     var slug = currentCollectionSlug();
-    var request = isHomePage() ? fetchJson('/collections', { size: 100 }).then(function (response) {
+    var request = (isHomePage() || isCollectionsIndexPage()) ? fetchJson('/collections', { size: 100 }).then(function (response) {
       return loadHomeCollectionCounts(response.results || []).then(function (home) {
-        return { page: 'home', collections: home.collections, counts: home.counts };
+        return { page: isCollectionsIndexPage() ? 'collections_index' : 'home', collections: home.collections, counts: home.counts };
       });
     }) : fetchJson('/collections', { size: 100 }).then(function (response) {
       var collections = response.results || [];
@@ -1535,14 +1556,18 @@
     });
 
     request.then(function (state) {
-      if (state.page !== 'home') {
+      if (state.page !== 'home' && state.page !== 'collections_index') {
         preloadProductsImages(state.products);
         var initialProduct = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
         syncUrl(state.selection, initialProduct, selectedVariant(initialProduct, state.selection));
       }
-      render(mount, state);
+      if (state.page === 'collections_index') {
+        renderCollectionsLanding(mount, state);
+      } else {
+        render(mount, state);
+      }
       scrollToHashTarget();
-      if (state.page !== 'home') bind(mount, state);
+      if (state.page !== 'home' && state.page !== 'collections_index') bind(mount, state);
       document.documentElement.classList.add('cs-storefront-ready');
       window.dispatchEvent(new CustomEvent('cs:storefront-ready', { detail: state }));
     }).catch(function (error) {
