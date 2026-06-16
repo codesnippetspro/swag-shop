@@ -743,6 +743,17 @@
     };
   }
 
+  function updateProductRailSelection(root, activeProduct) {
+    if (!activeProduct) return;
+    root.querySelectorAll('.pdfx-medcard').forEach(function (button) {
+      var active = button.dataset.product === activeProduct.slug;
+      button.classList.toggle('pdfx-medcard--on', active);
+      button.setAttribute('aria-current', active ? 'true' : 'false');
+      var slot = button.closest('.pdfx-medslot');
+      if (slot) slot.classList.toggle('pdfx-medslot--on', active);
+    });
+  }
+
   function updateConfigureSection(root, state) {
     var product = state.products.find(function (item) { return item.slug === state.selection.productSlug || stableParam(item.id) === stableParam(state.selection.productId); }) || state.products[0];
     if (!product) return;
@@ -757,6 +768,7 @@
     var template = document.createElement('template');
     template.innerHTML = renderConfigureSection(product, variant, state, configureStep);
     section.replaceWith(template.content.firstElementChild);
+    updateProductRailSelection(root, product);
     restoreRailScroll();
     window.requestAnimationFrame(restoreRailScroll);
   }
@@ -981,10 +993,11 @@
         });
       } else if (productButton) {
         var product = state.products.find(function (item) { return item.slug === productButton.dataset.product; });
+        if (!product) return;
         var restoreRailScroll = preserveRailScroll(root);
         state.selection = defaultSelection(product);
         syncUrl(state.selection, product, selectedVariant(product, state.selection));
-        render(root, state);
+        updateConfigureSection(root, state);
         restoreRailScroll();
         window.requestAnimationFrame(restoreRailScroll);
         scrollToConfigure(root);
