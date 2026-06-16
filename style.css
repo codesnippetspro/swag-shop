@@ -728,10 +728,9 @@ html { scroll-behavior: smooth; }
 .cs-hero__inner--center { display: flex; justify-content: center; min-height: 360px; text-align: center; }
 .cs-hero__inner--center .cs-hero__copy { max-width: 760px; }
 .cs-hero__inner--center .cs-hero__sub { margin-left: auto; margin-right: auto; }
-.cs-storefront--collections-index .cs-hero__title { line-height: 1.25; }
 .cs-storefront--collections-index .cs-hero__sub { font-size: 1.375rem; }
 .cs-hero .cs-eyebrow { color: var(--gold); }
-.cs-hero__title { font-size: 58px; font-weight: 600; line-height: 1; margin: 14px 0 20px; letter-spacing: -0.5px; color: inherit; }
+.cs-hero__title { font-size: 58px; font-weight: 600; line-height: 1.25; margin: 14px 0 20px; letter-spacing: -0.5px; color: inherit; }
 .cs-hero__sub { font-size: 18px; line-height: 1.55; color: rgba(255,255,255,0.78); max-width: 470px; margin: 0 0 28px; }
 .cs-hero__cta { display: flex; gap: 14px; flex-wrap: wrap; }
 .cs-hero__art { display: flex; align-items: center; justify-content: stretch; color: inherit; text-decoration: none; min-width: 0; }
@@ -1019,7 +1018,7 @@ body.cs-lightbox-open { overflow: hidden !important; overscroll-behavior: contai
 @media (max-width: 640px) {
   .cs-storefront--home { padding: 0 !important; }
   .cs-hero__inner { gap: 24px; }
-  .cs-hero__title { font-size: clamp(32px, 8.7vw, 36px); line-height: 0.98; margin: 12px 0 16px; }
+  .cs-hero__title { font-size: clamp(32px, 8.7vw, 36px); line-height: 1.25; margin: 12px 0 16px; }
   .cs-hero__sub { font-size: 15px; line-height: 1.48; margin-bottom: 22px; }
   .cs-hero__cta { flex-direction: column; gap: 10px; }
   .cs-hero__cta .cs-btn { width: 100%; min-height: 50px; }
