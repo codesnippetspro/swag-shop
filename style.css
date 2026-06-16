@@ -1,5 +1,7 @@
 @import url('https://cdn.jsdelivr.net/npm/css.gg/icons/css/share.css');
 
+html { scroll-behavior: smooth; }
+
 /* ============================================
    Fourthwall button overrides, site-wide
    Mirrors the theme button API while applying Code Snippets styling.
