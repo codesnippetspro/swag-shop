@@ -822,10 +822,10 @@ html { scroll-behavior: smooth; }
 .cs-field { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
 .cs-storefront__option-group > span { font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
 .cs-storefront__option-group { margin: 0 0 24px; }
-.cs-storefront__swatches { display: flex; gap: 12px; flex-wrap: wrap; }
-.cs-storefront__swatch { width: 34px; height: 34px; border-radius: 999px; border: 1.5px solid var(--border-mid); cursor: pointer; padding: 0; box-shadow: 0 0 0 1px rgba(48,48,48,0.12) inset; font-size: 0; background: transparent; }
-.cs-storefront__swatch span { width: 100%; height: 100%; border-radius: 999px; display: block; }
-.cs-storefront__swatch.is-active { box-shadow: 0 0 0 3px var(--color-primary); transform: scale(0.84); background: transparent; }
+.cs-storefront__swatches { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.cs-storefront__swatch { min-height: 42px; border-radius: 999px; border: 1.5px solid var(--border-mid); cursor: pointer; padding: 4px 12px 4px 4px; box-shadow: 0 0 0 1px rgba(48,48,48,0.08) inset; background: #fff; color: var(--color-on-background); display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; line-height: 1; }
+.cs-storefront__swatch span { width: 30px; height: 30px; min-width: 30px; border-radius: 999px; display: block; box-shadow: 0 0 0 1px rgba(48,48,48,0.14) inset; }
+.cs-storefront__swatch.is-active { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary); background: rgba(var(--color-primary-rgb, 244, 121, 32), 0.06); color: var(--teal-heading); }
 .cs-storefront__sizes { display: flex; gap: 10px; flex-wrap: wrap; }
 .cs-storefront__size { min-width: 56px; min-height: 46px; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-mid); background: #fff; color: var(--color-on-background); font-weight: 500; font-size: 15px; line-height: 1.25; cursor: pointer; }
 .cs-storefront__size.is-active { border: 2px solid var(--color-secondary); background: var(--color-secondary); color: #fff; }
