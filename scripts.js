@@ -292,11 +292,38 @@
     return size && size.name || '';
   }
 
+  function variantColorSwatch(variant) {
+    var color = variant && variant.attributes && variant.attributes.color;
+    return color && color.swatch || '';
+  }
+
+  function swatchLuminance(value) {
+    var color = String(value || '').trim();
+    var hex = color.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    var rgb = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    var channels;
+
+    if (hex) {
+      var raw = hex[1];
+      if (raw.length === 3) raw = raw.replace(/./g, '$&$&');
+      channels = [parseInt(raw.slice(0, 2), 16), parseInt(raw.slice(2, 4), 16), parseInt(raw.slice(4, 6), 16)];
+    } else if (rgb) {
+      channels = [parseInt(rgb[1], 10), parseInt(rgb[2], 10), parseInt(rgb[3], 10)];
+    }
+
+    if (!channels) return null;
+    return (0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]) / 255;
+  }
+
   function isLightColorName(name) {
-    return /\b(?:white|cream|ivory|natural|ash|silver|grey|gray|sand|beige|oatmeal|heather)\b/i.test(String(name || ''));
+    var value = String(name || '');
+    if (/\b(?:black|dark|navy|charcoal|graphite)\b/i.test(value)) return false;
+    return /\b(?:white|cream|ivory|natural|ash|silver|sand|beige|oatmeal|heather)\b/i.test(value);
   }
 
   function isLightVariant(variant) {
+    var luminance = swatchLuminance(variantColorSwatch(variant));
+    if (luminance !== null) return luminance >= 0.72;
     return isLightColorName(variantColor(variant));
   }
 
