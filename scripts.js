@@ -321,7 +321,13 @@
     return /\b(?:white|cream|ivory|natural|ash|silver|sand|beige|oatmeal|heather)\b/i.test(value);
   }
 
-  function isLightVariant(variant) {
+  function hasDarkProductName(product) {
+    var value = String(product && product.name || product && product.title || product && product.slug || '');
+    return /\b(?:black|dark|navy|charcoal|graphite|grey black|gray black)\b/i.test(value);
+  }
+
+  function isLightVariant(variant, product) {
+    if (hasDarkProductName(product)) return false;
     var luminance = swatchLuminance(variantColorSwatch(variant));
     if (luminance !== null) return luminance >= 0.72;
     return isLightColorName(variantColor(variant));
@@ -760,7 +766,7 @@
     var cartClass = variantInCart(state, variant && variant.id) ? ' has-cart-item' : '';
     var cartLabel = cartClass ? 'Added to cart' : 'Add to cart';
     var cfgClass = productImagesForVariant(product, variant).length < 2 ? ' pdfx-cfg--single-image' : '';
-    var configureClass = isLightVariant(variant) ? ' cs-storefront__configure--light-product' : '';
+    var configureClass = isLightVariant(variant, product) ? ' cs-storefront__configure--light-product' : '';
     return '<section class="cs-section cs-storefront__configure' + configureClass + '"><div class="cs-wrapper"><div class="pdfx-cfgrid"><div class="pdfx-cfgleft"><span class="pdfx-steppill"><span class="n">' + configureStep + '</span>Choose options</span>' + renderProductPreview(product, variant, state.selection) + '</div><div class="pdfx-cfg' + cfgClass + '"><h2 class="pdfx-cfg__title">' + escapeHtml(product.name) + '</h2>' + renderProductOptions(product, state.selection) + '<div class="cs-field"><div class="cs-buyrow">' + renderQuantityControl(state.selection.quantity) + '<div class="cs-buyrow__price">' + escapeHtml(money(variant && variant.unitPrice)) + '</div><button type="button" class="cs-btn cs-btn--secondary cs-btn--large cs-storefront__cart' + cartClass + '" data-variant="' + escapeHtml(variant && variant.id || '') + '" aria-label="' + cartLabel + '" title="' + cartLabel + '"' + (stockStatus.available ? '' : ' disabled') + '>' + cartLabel + '</button><button type="button" class="cs-btn cs-btn--primary cs-btn--large cs-btn--full cs-storefront__add" data-variant="' + escapeHtml(variant && variant.id || '') + '"' + (stockStatus.available ? '' : ' disabled') + '>' + (stockStatus.available ? 'Checkout now' : 'Sold out') + '</button></div></div>' + renderStockNote(stockStatus) + '<div class="pdfx-url" data-copy-link="' + escapeHtml(window.location.href) + '"><button type="button" class="pdfx-sharebtn" aria-label="Share this configuration" title="Share this configuration"><i class="gg-share" aria-hidden="true"></i><span class="pdfx-sharebtn__label">Share this configuration</span></button></div>' + renderProductImageSlider(product, variant, state.selection) + '</div></div>' + renderProductAccordion(product) + '</div></section>';
   }
 
