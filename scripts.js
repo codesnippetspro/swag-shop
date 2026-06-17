@@ -960,13 +960,26 @@
     var sizes = uniqueSizes(product);
     var desiredColor = optionName === 'color' ? optionValue : selection.color;
     var desiredSize = optionName === 'size' ? optionValue : selection.size;
+    var variants = product.variants || [];
     if (colors.length <= 1) desiredColor = '';
     if (sizes.length <= 1) desiredSize = '';
-    return (product.variants || []).find(function (variant) {
+
+    var exactVariant = variants.find(function (variant) {
       var color = variantColor(variant);
       var size = variantSize(variant);
       return (!desiredColor || color === desiredColor) && (!desiredSize || size === desiredSize);
-    }) || (product.variants || [])[0] || null;
+    });
+    if (exactVariant) return exactVariant;
+
+    if (optionName === 'color' && desiredColor) {
+      return variants.find(function (variant) { return variantColor(variant) === desiredColor; }) || variants[0] || null;
+    }
+
+    if (optionName === 'size' && desiredSize) {
+      return variants.find(function (variant) { return variantSize(variant) === desiredSize; }) || variants[0] || null;
+    }
+
+    return variants[0] || null;
   }
 
   function bind(root, state) {
