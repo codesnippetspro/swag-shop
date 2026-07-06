@@ -343,22 +343,58 @@
     return Math.round(milliliters / 10) * 10 + ' ml';
   }
 
+  function metricNumber(inches) {
+    var centimeters = inches * 2.54;
+    if (centimeters >= 10) return String(Math.round(centimeters));
+    return trimDecimal(centimeters.toFixed(1));
+  }
+
   function formatMetricLength(inches) {
-    return trimDecimal((inches * 2.54).toFixed(1)) + ' cm';
+    return metricNumber(inches) + ' cm';
+  }
+
+  function imperialDimensionLabel(parts) {
+    return parts.map(function (part) { return trimDecimal(String(part)) + '″'; }).join(' × ');
+  }
+
+  function metricDimensionLabel(parts) {
+    return parts.map(function (part) { return metricNumber(parseFloat(part)); }).join(' × ') + ' cm';
+  }
+
+  function metricFirstText(value) {
+    var label = String(value || '').trim();
+    if (!label) return '';
+
+    label = label.replace(/(\d+(?:\.\d+)?)\s*(?:″|"|in(?:ch(?:es)?)?)?\s*[x×]\s*(\d+(?:\.\d+)?)(?:\s*(?:″|"|in(?:ch(?:es)?)?))?/gi, function (match, first, second, offset, text) {
+      if (/\bcm\b|centimet(?:er|re)s?/i.test(match)) return match;
+      if (/^\s*cm\b/i.test(text.slice(offset + match.length))) return match;
+      if (/\/\s*$/.test(text.slice(Math.max(0, offset - 4), offset))) return match;
+      return metricDimensionLabel([first, second]) + ' / ' + imperialDimensionLabel([first, second]);
+    });
+
+    label = label.replace(/(^|[^\d])(\d+(?:\.\d+)?)\s*(?:fl\.?\s*)?oz\b(?!\s*[\/(].*\b(?:ml|l)\b)/gi, function (match, prefix, amount) {
+      if (/\/\s*$/.test(prefix)) return match;
+      return prefix + formatMetricVolume(parseFloat(amount)) + ' / ' + trimDecimal(amount) + ' oz';
+    });
+
+    label = label.replace(/(^|[^\d])(\d+(?:\.\d+)?)\s*(?:in|inch|inches|″|")\b(?!\s*[\/(].*\bcm\b)/gi, function (match, prefix, amount) {
+      if (/\/\s*$/.test(prefix)) return match;
+      return prefix + formatMetricLength(parseFloat(amount)) + ' / ' + trimDecimal(amount) + '″';
+    });
+
+    label = label.replace(/(\d+(?:\.\d+)?)\s*oz\s*\((\d+(?:\.\d+)?)\s*(ml|l)\)/gi, function (match, ounces, metric, unit) {
+      return trimDecimal(metric) + ' ' + unit.toLowerCase() + ' / ' + trimDecimal(ounces) + ' oz';
+    });
+
+    label = label.replace(/(\d+(?:\.\d+)?)″\s*\((\d+(?:\.\d+)?)\s*cm\)/gi, function (match, inches, centimeters) {
+      return trimDecimal(centimeters) + ' cm / ' + trimDecimal(inches) + '″';
+    });
+
+    return label;
   }
 
   function dualUnitLabel(value) {
-    var label = String(value || '').trim();
-    if (!label) return '';
-    if (/\b(?:ml|millilit(?:er|re)s?|l|lit(?:er|re)s?)\b/i.test(label) || /\bcm\b|centimet(?:er|re)s?/i.test(label)) return label;
-
-    var volumeMatch = label.match(/^(\d+(?:\.\d+)?)\s*(?:fl\.?\s*)?oz\b/i);
-    if (volumeMatch) return label + ' / ' + formatMetricVolume(parseFloat(volumeMatch[1]));
-
-    var lengthMatch = label.match(/^(\d+(?:\.\d+)?)\s*(?:in|inch|inches|\")\b/i);
-    if (lengthMatch) return label + ' / ' + formatMetricLength(parseFloat(lengthMatch[1]));
-
-    return label;
+    return metricFirstText(value);
   }
 
   function uniqueColors(product) {
@@ -604,6 +640,18 @@
     return template.innerHTML;
   }
 
+  function metricFirstHtml(html) {
+    var template = document.createElement('template');
+    template.innerHTML = String(html || '');
+    var walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function (node) {
+      node.nodeValue = metricFirstText(node.nodeValue);
+    });
+    return template.innerHTML;
+  }
+
   function accordionTitle(type, fallback) {
     var titles = {
       MORE_DETAILS: 'Product details',
@@ -678,7 +726,7 @@
     (product.additionalInformation || []).forEach(function (item) {
       if (!item || !item.bodyHtml) return;
       var title = item.title || accordionTitle(item.type);
-      var body = sanitizeProductHtml(item.bodyHtml);
+      var body = metricFirstHtml(sanitizeProductHtml(item.bodyHtml));
       if (item.type === 'SIZE_AND_FIT' || /size\s*&\s*fit|size\s+and\s+fit/i.test(title)) body = enhanceSizeAndFitHtml(body);
       rows.push({ title: title, body: body });
     });
