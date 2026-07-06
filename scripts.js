@@ -372,7 +372,7 @@
       return metricDimensionLabel([first, second]) + ' / ' + imperialDimensionLabel([first, second]);
     });
 
-    label = label.replace(/(^|[^\d])(\d+(?:\.\d+)?)\s*(?:fl\.?\s*)?oz\b(?!\s*[\/(].*\b(?:ml|l)\b)/gi, function (match, prefix, amount) {
+    label = label.replace(/(^|[^\d])(\d+(?:\.\d+)?)\s*(?:fl\.?\s*)?oz\b(?!\.?\s*\/)(?!\s*[\/(].*\b(?:ml|l)\b)/gi, function (match, prefix, amount) {
       if (/\/\s*$/.test(prefix)) return match;
       return prefix + formatMetricVolume(parseFloat(amount)) + ' / ' + trimDecimal(amount) + ' oz';
     });
